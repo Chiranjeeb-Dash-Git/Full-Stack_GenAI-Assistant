@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Inter:wght@400;500;600&family=Space+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@layer base {
+  :root {
+    --primary: 0 0 0;
+    --surface: 255 255 255;
+    --background: 255 255 255;
+    --on-surface: 0 0 0;
+    --bg-color: 255 255 255;
+    --text-color: 0 0 0;
+  }
+
+  .dark {
+    --bg-color: 15 15 15;
+    --text-color: 235 235 235;
+  }
+
+  body {
+    background-color: rgb(var(--bg-color));
+    color: rgb(var(--text-color));
+    font-family: 'Architects Daughter', cursive;
+    overflow-x: hidden;
+    position: relative;
+    background-image: none; /* Removed hatching to match "white screen" request */
+  }
+}
+
+@layer components {
+  /* Sketched box style from mockup */
+  .sketch-box {
+    background: rgb(var(--bg-color));
+    border: 2px solid rgb(var(--text-color));
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+    padding: 1rem;
+    position: relative;
+  }
+
+  /* Placeholder logo from top left of mockup */
+  .sketch-logo-box {
+    width: 60px;
+    height: 60px;
+    border: 2px solid rgb(var(--text-color));
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sketch-logo-box::before, .sketch-logo-box::after {
+    content: '';
+    position: absolute;
+    width: 141%; /* sqrt(2) * 100 */
+    height: 2px;
+    background: rgb(var(--text-color));
+  }
+  .sketch-logo-box::before { transform: rotate(45deg); }
+  .sketch-logo-box::after { transform: rotate(-45deg); }
+
+  .glass-3, .glass-sidebar, .input-container {
+    background: rgb(var(--bg-color));
+    border: 2px solid rgb(var(--text-color)) !important;
+    backdrop-filter: none !important;
+    border-radius: 0px !important;
+  }
+
+  .premium-button {
+    background: rgb(var(--bg-color));
+    border: 2px solid rgb(var(--text-color));
+    color: rgb(var(--text-color));
+    font-weight: bold;
+    padding: 10px 20px;
+    transition: all 0.1s ease;
+    border-radius: 0px;
+    cursor: pointer;
+  }
+
+  .premium-button:hover {
+    background: rgb(var(--text-color));
+    color: rgb(var(--bg-color));
+  }
+
+  /* Chat Prefixes & Bubbles from Mockup */
+  .message-assistant {
+    background: rgb(var(--bg-color));
+    border: 2px solid rgb(var(--text-color));
+    margin: 10px 0;
+    padding: 15px;
+    width: 85%;
+    margin-left: auto;
+    position: relative;
+  }
+
+  .message-user {
+    background: rgb(var(--bg-color));
+    border: 2px solid rgb(var(--text-color));
+    margin: 10px 0;
+    padding: 15px;
+    width: 85%;
+    margin-right: auto;
+    position: relative;
+    /* Mockup blue selection look for active user message if needed */
+  }
+
+  .message-container-user {
+    display: flex;
+    justify-content: flex-start;
+    padding: 0 20px;
+  }
+  .message-container-assistant {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 20px;
+  }
+
+  /* Status and Branding */
+  .typing-indicator {
+    position: fixed;
+    top: 25px;
+    right: 35px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    z-index: 100;
+    font-family: 'Architects Daughter', cursive;
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #000, #3b82f6, #000); /* Blue shimmer highlight */
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 3s infinite linear;
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .glow-logo {
+    animation: glowPulse 4s infinite ease-in-out;
+  }
+
+  @keyframes zoomBreath {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+
+  @keyframes floatInSystem {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes tapHint {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+  }
+
+  .animate-float-slow {
+    animation: floatInSystem 4s ease-in-out infinite;
+  }
+
+  .animate-tap {
+    animation: tapHint 1s ease-in-out infinite;
+  }
+
+  /* Sidebar styling */
+  .glass-sidebar {
+    background: rgb(var(--bg-color));
+    border-right: 3px solid rgb(var(--text-color));
+  }
+
+  /* Input fields */
+  input, textarea {
+    background: rgb(var(--bg-color)) !important;
+    border: 2px solid rgb(var(--text-color)) !important;
+    color: rgb(var(--text-color)) !important;
+    padding: 12px !important;
+    outline: none !important;
+    border-radius: 0px !important;
+  }
+
+  .font-headline { font-family: 'Architects Daughter', cursive; }
+  .font-body { font-family: 'Inter', sans-serif; }
+  .font-label { font-family: 'Architects Daughter', cursive; }
+  .font-mono { font-family: 'Space Mono', monospace; }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgb(var(--text-color));
+  border: 2px solid rgb(var(--bg-color));
+}
