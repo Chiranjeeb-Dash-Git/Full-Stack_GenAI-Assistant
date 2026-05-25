@@ -79,6 +79,8 @@ export default function Home() {
   const isRequestActive = useRef(false);
   const abortControllerRef = useRef(null);
   const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
 
   const getStorageKey = () => `chat_history_${user?.email || "guest"}`;
 
@@ -162,42 +164,72 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      
-      recognitionRef.current.onresult = (event) => {
-        let transcript = '';
-        for (let i = 0; i < event.results.length; ++i) {
-          transcript += event.results[i][0].transcript;
-        }
-        setInput(transcript);
-      };
-      
-      recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error", event?.error);
-        setIsListening(false);
-      };
-      
-      recognitionRef.current.onend = () => {
-        setIsListening(false);
-      };
-    }
-  }, []);
+  const processAudioBlob = async (audioBlob) => {
+    setIsProcessingFile(true);
+    try {
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.webm");
 
-  const toggleListening = () => {
+      const response = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Transcription failed");
+      
+      const data = await response.json();
+      const transcribedText = data.text || "[Inaudible]";
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      const displayMessage = {
+        role: "user",
+        content: `🎙️ Voice Note: "${transcribedText}"`,
+        audioUrl: audioUrl
+      };
+      
+      const bodyPayload = {
+        messages: [...messages, { role: "user", content: transcribedText }]
+      };
+      
+      const initialMessagesForUI = [...messages, displayMessage];
+      runAssistantFetch(bodyPayload, initialMessagesForUI);
+    } catch (err) {
+      console.error("Transcription error:", err);
+      alert("Failed to transcribe audio.");
+    } finally {
+      setIsProcessingFile(false);
+    }
+  };
+
+  const toggleListening = async () => {
     if (isListening) {
-      recognitionRef.current?.stop();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
       setIsListening(false);
     } else {
-      if (recognitionRef.current) {
-        recognitionRef.current.start();
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorderRef.current.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          await processAudioBlob(audioBlob);
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.start();
         setIsListening(true);
-      } else {
-        alert("Speech Recognition is not supported in this browser.");
+      } catch (err) {
+        console.error("Error accessing microphone:", err);
+        alert("Microphone access denied or not supported.");
       }
     }
   };
@@ -228,7 +260,20 @@ export default function Home() {
     try {
       const processedFiles = [];
       for (const file of files) {
-        if (file.type === "application/pdf" || file.type.startsWith("image/")) {
+        if (file.type.startsWith("audio/")) {
+          const formData = new FormData();
+          formData.append("audio", file);
+          
+          const response = await fetch("/api/transcribe", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) throw new Error("Transcription failed");
+          
+          const data = await response.json();
+          setInput(prev => (prev ? prev + " " + data.text : data.text));
+        } else if (file.type === "application/pdf" || file.type.startsWith("image/")) {
           const reader = new FileReader();
           const base64 = await new Promise((resolve) => {
             reader.onload = () => resolve(reader.result);
@@ -240,13 +285,14 @@ export default function Home() {
             content: "Raw media buffer captured.",
             base64
           });
-        }
-        else {
+        } else {
           const content = await file.text();
           processedFiles.push({ name: file.name, type: "DOC", content: content.trim() });
         }
       }
-      setAttachedFiles(prev => [...prev, ...processedFiles]);
+      if (processedFiles.length > 0) {
+        setAttachedFiles(prev => [...prev, ...processedFiles]);
+      }
     } catch (err) {
       console.error("Scan Error:", err);
       alert("Failed to parse some files.");
@@ -279,11 +325,14 @@ export default function Home() {
 
     setMessages([...initialMessagesForUI, { role: "assistant", content: "" }]);
 
+    // Sanitize messages to remove UI-only fields like audioUrl
+    const sanitizedMessages = apiPayload.messages.map(({ role, content }) => ({ role, content }));
+
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...apiPayload, model: selectedModel }),
+        body: JSON.stringify({ ...apiPayload, messages: sanitizedMessages, model: selectedModel }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -766,7 +815,12 @@ export default function Home() {
                             </div>
                           </div>
                         ) : (
-                          <div className="inline break-words whitespace-pre-wrap">{message.content}</div>
+                          <div className="flex flex-col gap-2 w-full">
+                            <div className="inline break-words whitespace-pre-wrap">{message.content}</div>
+                            {message.audioUrl && (
+                              <audio src={message.audioUrl} controls className="w-full mt-2 h-10 filter invert grayscale opacity-80" />
+                            )}
+                          </div>
                         )
                       ) : (
                         message.content || (
@@ -852,7 +906,7 @@ export default function Home() {
                 >
                   <Paperclip size={20} />
                 </button>
-                <input type="file" multiple ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*,.txt,.md,.js,.json" />
+                <input type="file" multiple ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*,.txt,.md,.js,.json,audio/*" />
 
                 <div
                   className="flex-grow flex items-start bg-white px-4 py-3 border-2 border-black focus-within:ring-1 focus-within:ring-black transition-colors group relative cursor-text min-h-[48px]"
