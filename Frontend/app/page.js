@@ -739,12 +739,6 @@ export default function Home() {
                                 </span>
                               </div>
                               <div>
-                                <span className="text-[8px] font-label text-black/90 font-bold uppercase block mb-1 tracking-tighter">LAUNCH</span>
-                                <span className="px-2 py-1 border-2 border-black font-body font-bold text-[10px] text-black bg-white inline-block shadow-[2px_2px_0px_#000]">
-                                  APRIL 2026
-                                </span>
-                              </div>
-                              <div>
                                 <span className="text-[8px] font-label text-black/90 font-bold uppercase block mb-1 tracking-tighter text-blue-600">GITHUB</span>
                                 <a 
                                   href="https://github.com/Chiranjeeb-Dash-Git" 
