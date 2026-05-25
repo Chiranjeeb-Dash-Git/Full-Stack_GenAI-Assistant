@@ -68,47 +68,7 @@ Full-Stack_GenAI-Assistant/
 └── Backend/                  # Optional Express Server (Legacy)
 ```
 
----
 
-## 🚀 Quick Install
-
-### Prerequisites
-- Node.js `v18+`
-- **Groq API Key** → Get it free at [console.groq.com](https://console.groq.com)
-
-### Local Development Setup
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Chiranjeeb-Dash-Git/Full-Stack_GenAI-Assistant.git
-   cd Full-Stack_GenAI-Assistant/Frontend
-   ```
-2. **Install Dependencies:**
-   ```bash
-   npm install
-   ```
-3. **Configure Environment Variables:**  
-   Create a `.env.local` file in the `Frontend` directory and add your API keys:
-   ```env
-   GROK_API_KEY="your_groq_api_key_here"
-   ```
-4. **Boot the Development Server:**
-   ```bash
-   npm run dev
-   ```
-   *The platform is now live at [http://localhost:3000](http://localhost:3000)*
-
----
-
-## 🌍 Vercel Deployment
-
-This project is deeply optimized for serverless edge deployment on **Vercel**.
-
-1. Fork this repository.
-2. Import your fork into [Vercel](https://vercel.com/new).
-3. Set the **Root Directory** to `Frontend`.
-4. The **Framework Preset** should automatically detect `Next.js`.
-5. Add your `GROK_API_KEY` to the Environment Variables settings.
-6. Click **Deploy** ✅.
 
 ---
 
