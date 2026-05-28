@@ -103,13 +103,6 @@ Full-Stack_GenAI-Assistant/
 
 This project is deeply optimized for serverless edge deployment on **Vercel**.
 
-1. Fork this repository.
-2. Import your fork into [Vercel](https://vercel.com/new).
-3. Set the **Root Directory** to `Frontend`.
-4. The **Framework Preset** should automatically detect `Next.js`.
-5. Add your `GROK_API_KEY` to the Environment Variables settings.
-6. Click **Deploy** ✅.
-
 ---
 
 > **Developer:** Chiranjeeb Dash  
