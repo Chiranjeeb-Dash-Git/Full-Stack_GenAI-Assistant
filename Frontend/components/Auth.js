@@ -1,153 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, Mail, Lock, User, Cpu, ShieldCheck, Zap, Cog, Activity, Fingerprint, DoorOpen } from "lucide-react";
+import { useState } from "react";
+import { Eye, EyeOff, Mail, LockKeyhole, UserRound, Github, X, Home as HomeIcon } from "lucide-react";
 
 export default function Auth({ onClose, onLogin, currentUser, onHome }) {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isScanning, setIsScanning] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
+  const [agreed, setAgreed] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const timer = setInterval(() => setIsScanning(prev => !prev), 3000);
-    return () => clearInterval(timer);
-  }, []);
+  const switchMode = (nextMode) => { setMode(nextMode); setError(""); setPassword(""); };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (event) => {
+    event.preventDefault();
     setError("");
-
-    // Load registry
+    if (mode === "signup" && !agreed) { setError("Please agree to the terms to create an account."); return; }
+    setIsSubmitting(true);
     const registry = JSON.parse(localStorage.getItem("user_registry") || "[]");
-
-    if (isLogin) {
-      // Login Logic
-      const foundUser = registry.find(u => u.email === email && u.password === password);
-      if (foundUser) {
-        onLogin(foundUser);
-        onClose();
-      } else {
-        setError("DECRYPTION FAILED: IDENTITY NOT FOUND");
-      }
+    if (mode === "login") {
+      const foundUser = registry.find(user => user.email === email && user.password === password);
+      if (!foundUser) { setError("Email or password is incorrect."); setIsSubmitting(false); return; }
+      if (remember) localStorage.setItem("remembered_email", email);
+      onLogin(foundUser); onClose();
     } else {
-      // Signup Logic
-      if (registry.some(u => u.email === email)) {
-        setError("CONFLICT: IDENTITY ALREADY REGISTERED");
-        return;
-      }
-      
-      const newUser = { name: name || "Unknown Operator", email, password };
-      const updatedRegistry = [...registry, newUser];
-      localStorage.setItem("user_registry", JSON.stringify(updatedRegistry));
-      
-      onLogin(newUser);
-      onClose();
+      if (!name.trim() || !email.trim() || password.length < 6) { setError("Use your name, a valid email, and a password of at least 6 characters."); setIsSubmitting(false); return; }
+      if (registry.some(user => user.email === email)) { setError("An account with this email already exists."); setIsSubmitting(false); return; }
+      const newUser = { name: name.trim(), email: email.trim(), password };
+      localStorage.setItem("user_registry", JSON.stringify([...registry, newUser]));
+      onLogin(newUser); onClose();
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/50 backdrop-blur-md animate-in fade-in duration-500">
-      <div className={`relative w-full max-w-lg border-2 ${error ? 'border-red-600' : 'border-black'} bg-white p-8 md:p-12 shadow-[10px_10px_0px_#000] transition-all duration-500`}>
-        {onHome && (
-          <button
-            type="button"
-            onClick={onHome}
-            className="absolute top-4 left-4 px-3 py-2 border-2 border-black text-[10px] font-mono font-bold uppercase hover:bg-black hover:text-white transition-colors"
-          >
-            ← Home
-          </button>
-        )}
-        
-        {currentUser && (
-          <button 
-            type="button"
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-black hover:bg-black/5 transition-all"
-          >
-            <X size={24} />
-          </button>
-        )}
-
-        <div className="flex flex-col items-center mb-8 text-center">
-          <div className="relative mb-6">
-            <div className={`w-20 h-20 border-2 ${error ? 'border-red-600' : 'border-black'} flex items-center justify-center bg-white shadow-[4px_4px_0px_#000]`}>
-              <Cpu size={40} className="text-black" />
-            </div>
-          </div>
-
-          <h2 className="text-2xl font-headline font-bold tracking-tight text-black uppercase">
-            {error ? "ACCESS DENIED" : (isLogin ? "USER LOGIN" : "CREATE ACCOUNT")}
-          </h2>
-          
-          {error && (
-            <div className="mt-4 p-3 border-2 border-red-600 bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-widest">
-              {error}
-            </div>
-          )}
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="FULL NAME"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white border-2 border-black p-4 text-xs font-bold tracking-widest outline-none focus:bg-black/5 placeholder:text-black/30"
-              />
-            </div>
-          )}
-          
-          <div className="relative">
-            <input 
-              type="email" 
-              placeholder="EMAIL ADDRESS"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white border-2 border-black p-4 text-xs font-bold tracking-widest outline-none focus:bg-black/5 placeholder:text-black/30"
-            />
-          </div>
-
-          <div className="relative">
-            <input 
-              type="password" 
-              placeholder="PASSWORD"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white border-2 border-black p-4 text-xs font-bold tracking-widest outline-none focus:bg-black/5 placeholder:text-black/30"
-            />
-          </div>
-
-          <button 
-            type="submit"
-            className="w-full py-4 bg-black text-white font-bold uppercase tracking-widest shadow-[4px_4px_0px_#ccc] hover:bg-black/90 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-          >
-            {isLogin ? "SIGN IN" : "CREATE ACCOUNT"}
-          </button>
-
-          <button 
-            type="button" 
-            onClick={() => setIsLogin(!isLogin)}
-            className="w-full py-4 bg-black text-white font-bold uppercase tracking-widest shadow-[4px_4px_0px_#ccc] hover:bg-black/90 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-          >
-            {isLogin ? "CREATE NEW ACCOUNT" : "RETURN TO LOGIN"}
-          </button>
-
-          <button 
-            type="button" 
-            onClick={onClose}
-            className="w-full py-4 bg-black text-white font-bold uppercase tracking-widest shadow-[4px_4px_0px_#ccc] hover:bg-black/90 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
-          >
-            STAY AS GUEST
-          </button>
-        </form>
+    <div className="auth-overlay">
+      <div className="auth-field" aria-hidden="true"><div className="auth-orb-wrap auth-orb-one"><div className="auth-orb" /></div><div className="auth-orb-wrap auth-orb-two"><div className="auth-orb" /></div><div className="auth-orb-wrap auth-orb-three"><div className="auth-orb" /></div></div>
+      <div className="auth-shell">
+        <section className="auth-brand-panel">
+          <div className="auth-brand"><span className="auth-brand-mark" /> Full-Stack GenAI Assistant</div>
+          <div className="auth-icon-field" aria-hidden="true"><div className="auth-icon-tile auth-tile-one">💬</div><div className="auth-icon-tile auth-tile-two">🎙️</div><div className="auth-icon-tile auth-tile-three">📄</div><div className="auth-icon-tile auth-tile-four">✦</div><div className="auth-icon-tile auth-tile-five">◐</div></div>
+          <div><div className="auth-waveform" aria-hidden="true">{[40, 75, 100, 55, 88, 35, 95, 60].map((height, index) => <span key={index} style={{ height: `${height}%`, animationDelay: `${index / 10}s` }} />)}</div><h2>Talk to it. It talks back.</h2><p>Sign in to pick up your conversation exactly where you left it — streaming replies, voice in and out, all in one console.</p><div className="auth-foot-note">Built for developers building with modern AI.</div></div>
+        </section>
+        <section className="auth-form-panel">
+          <div className="auth-top-actions">{onHome && <button type="button" onClick={onHome} className="auth-home-button"><HomeIcon size={14} /> Home</button>}{currentUser && <button type="button" onClick={onClose} className="auth-close-button" aria-label="Close"><X size={18} /></button>}</div>
+          <div className={`auth-tabs ${mode === "signup" ? "auth-tabs-signup" : ""}`}><div className="auth-tab-indicator" /><button type="button" className={`auth-tab ${mode === "login" ? "active" : ""}`} onClick={() => switchMode("login")}>Log in</button><button type="button" className={`auth-tab ${mode === "signup" ? "active" : ""}`} onClick={() => switchMode("signup")}>Sign up</button></div>
+          <form className="auth-form-view" onSubmit={handleSubmit}>
+            <h3>{mode === "login" ? "Welcome back" : "Create your account"}</h3><p className="auth-form-sub">{mode === "login" ? "Log in to continue your conversation." : "Start streaming your first conversation in seconds."}</p>
+            {error && <div className="auth-error" role="alert">{error}</div>}
+            {mode === "signup" && <label className="auth-field-group"><input type="text" placeholder="Full name" value={name} onChange={event => setName(event.target.value)} autoComplete="name" /><span className="auth-field-icon"><UserRound size={15} /></span></label>}
+            <label className="auth-field-group"><input type="email" placeholder="Email address" value={email} onChange={event => setEmail(event.target.value)} autoComplete="email" required /><span className="auth-field-icon"><Mail size={15} /></span></label>
+            <label className="auth-field-group"><input type={showPassword ? "text" : "password"} placeholder={mode === "login" ? "Password" : "Create password"} value={password} onChange={event => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} required /><span className="auth-field-icon"><LockKeyhole size={15} /></span><button type="button" className="auth-eye" onClick={() => setShowPassword(prev => !prev)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></label>
+            <div className="auth-row-between"><label className="auth-check"><input type="checkbox" checked={mode === "login" ? remember : agreed} onChange={event => mode === "login" ? setRemember(event.target.checked) : setAgreed(event.target.checked)} /> {mode === "login" ? "Remember me" : "I agree to the terms"}</label>{mode === "login" && <button type="button" className="auth-forgot" onClick={() => setError("Password recovery is not configured yet.")}>Forgot password?</button>}</div>
+            <button type="submit" className="auth-submit" disabled={isSubmitting}>{isSubmitting ? "Please wait..." : mode === "login" ? "Log in" : "Create account"}</button>
+            <div className="auth-divider">or continue with</div><div className="auth-social-row"><button type="button" className="auth-social" onClick={() => setError("Google sign-in is not configured yet.")}><span>G</span> Google</button><button type="button" className="auth-social" onClick={() => setError("GitHub sign-in is not configured yet.")}><span><Github size={14} /></span> GitHub</button></div>
+            <button type="button" className="auth-guest" onClick={onClose}>Continue as guest</button>
+            <div className="auth-switch-line">{mode === "login" ? "Don't have an account?" : "Already have an account?"} <button type="button" onClick={() => switchMode(mode === "login" ? "signup" : "login")}>{mode === "login" ? "Sign up" : "Log in"}</button></div>
+          </form>
+        </section>
       </div>
     </div>
   );
