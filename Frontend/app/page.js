@@ -966,6 +966,7 @@ export default function Home() {
           onClose={() => setIsAuthVisible(false)}
           onLogin={(userData) => setUser(userData)}
           currentUser={user}
+          onHome={() => setShowLanding(true)}
         />
       )}
 

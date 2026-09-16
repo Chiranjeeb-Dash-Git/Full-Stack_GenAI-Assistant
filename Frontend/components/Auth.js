@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Mail, Lock, User, Cpu, ShieldCheck, Zap, Cog, Activity, Fingerprint, DoorOpen } from "lucide-react";
 
-export default function Auth({ onClose, onLogin, currentUser }) {
+export default function Auth({ onClose, onLogin, currentUser, onHome }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,6 +51,15 @@ export default function Auth({ onClose, onLogin, currentUser }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-white/50 backdrop-blur-md animate-in fade-in duration-500">
       <div className={`relative w-full max-w-lg border-2 ${error ? 'border-red-600' : 'border-black'} bg-white p-8 md:p-12 shadow-[10px_10px_0px_#000] transition-all duration-500`}>
+        {onHome && (
+          <button
+            type="button"
+            onClick={onHome}
+            className="absolute top-4 left-4 px-3 py-2 border-2 border-black text-[10px] font-mono font-bold uppercase hover:bg-black hover:text-white transition-colors"
+          >
+            ← Home
+          </button>
+        )}
         
         {currentUser && (
           <button 
