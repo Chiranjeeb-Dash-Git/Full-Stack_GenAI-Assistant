@@ -152,6 +152,7 @@ export default function Home() {
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showLanding, setShowLanding] = useState(true);
+  const [chatSearch, setChatSearch] = useState("");
   const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [voiceSettings, setVoiceSettings] = useState({
@@ -837,7 +838,7 @@ export default function Home() {
   if (showLanding) return <LandingPage onLaunch={() => setShowLanding(false)} />;
 
   return (
-    <div className="flex h-screen w-full bg-white text-black font-body overflow-hidden relative">
+    <div className="chat-console-shell flex h-screen w-full bg-white text-black font-body overflow-hidden relative">
       {/* SKETCH OVERLAY IS NOW HANDLED IN GLOBALS.CSS */}
 
       {sidebarOpen && (
@@ -849,7 +850,7 @@ export default function Home() {
 
       {/* Sidebar */}
       <div
-        className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`chat-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 fixed md:static inset-y-0 left-0 z-50 w-[280px] bg-white border-r-2 border-black shrink-0 flex flex-col p-4 transition-all duration-500 ease-in-out`}
       >
         <div className="flex items-center gap-2 mb-6 md:hidden">
@@ -876,9 +877,13 @@ export default function Home() {
           New Discussion
         </button>
 
+        <div className="chat-search flex items-center gap-2 mt-4 px-3 py-2 border border-black/10 bg-[#F3F1E9] rounded-xl text-black/50">
+          <Search size={14} />
+          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations" className="!border-0 !p-0 !bg-transparent text-xs w-full" />
+        </div>
         <div className="flex-1 overflow-y-auto mt-2 px-1 custom-scrollbar space-y-2">
           <div className="text-[10px] text-black font-mono font-bold uppercase tracking-[0.2em] mb-4 px-2">MEMORY_BANK</div>
-          {chats.map((chat) => (
+          {chats.filter(chat => !chatSearch.trim() || (chat.title || chat.messages?.[0]?.content || "").toLowerCase().includes(chatSearch.toLowerCase())).map((chat) => (
             <div key={chat.id} className="relative group">
               {editingChatId === chat.id ? (
                 <div className="flex items-center gap-2 p-2 w-full border border-black bg-white">
@@ -971,10 +976,10 @@ export default function Home() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 h-full relative z-0">
+      <div className="chat-main flex-1 flex flex-col min-w-0 h-full relative z-0">
 
 
-        <div className="sticky top-0 z-30 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md text-black border-b border-black md:px-6">
+        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md text-black border-b border-black md:px-6">
           <div className="flex items-center gap-2">
             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 md:hidden">
               <Menu size={26} />
@@ -1020,7 +1025,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setVoiceMode(prev => !prev)}
-              className={`flex items-center gap-2 px-3 py-1.5 border-2 border-black transition-colors text-xs font-bold font-mono tracking-tighter ${voiceMode ? "bg-black text-white shadow-[2px_2px_0px_#888]" : "bg-white hover:bg-black/5 shadow-[2px_2px_0px_#ccc]"}`}
+              className={`chat-voice-switch flex items-center gap-2 px-3 py-1.5 border-2 border-black transition-colors text-xs font-bold font-mono tracking-tighter ${voiceMode ? "on bg-black text-white shadow-[2px_2px_0px_#888]" : "bg-white hover:bg-black/5 shadow-[2px_2px_0px_#ccc]"}`}
               title="Automatically speak assistant replies"
             >
               <Mic size={14} />
@@ -1113,7 +1118,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="chat-scroll-area flex-1 overflow-y-auto custom-scrollbar">
           {messages.length === 0 ? (
             <div className="min-h-full flex flex-col items-center pt-4 pb-32 px-4 md:px-8">
               <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath">
@@ -1202,9 +1207,9 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <div className="flex flex-col gap-6 mb-40 px-4 md:px-0 max-w-4xl mx-auto w-full">
+            <div className="chat-inner flex flex-col gap-6 mb-40 px-4 md:px-0 max-w-4xl mx-auto w-full">
               {messages.map((message, index) => (
-                <div key={index} className={`group ${message.role === "user" ? "message-container-user" : "message-container-assistant"}`}>
+                <div key={index} className={`chat-message group ${message.role === "user" ? "message-container-user" : "message-container-assistant"}`}>
                   <div className={message.role === "user" ? "message-user flex-col !items-end" : "message-assistant flex-col !items-start"}>
                     <div className="font-headline text-lg leading-relaxed w-full">
                       <span className="font-bold mr-2 text-sm text-black/40">
@@ -1325,7 +1330,7 @@ export default function Home() {
         </div>
 
         {/* Terminal Input */}
-        <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 md:px-6 bg-gradient-to-t from-white via-white to-white z-20">
+        <div className="chat-composer-wrap absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 md:px-6 bg-gradient-to-t from-white via-white to-white z-20">
           <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
             {isListening && (
               <div className="mb-3 flex items-center gap-3 border-2 border-red-500 bg-red-50 px-4 py-3 text-red-600 shadow-[4px_4px_0px_#fca5a5] animate-pulse">
