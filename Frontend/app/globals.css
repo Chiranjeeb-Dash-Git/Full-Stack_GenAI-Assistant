@@ -444,8 +444,11 @@
   .chat-console-shell .chat-canvas-grid,
   .chat-console-shell .chat-canvas-glow,
   .chat-console-shell .chat-canvas-beam {
-    animation-duration: 16s !important;
     animation-iteration-count: infinite !important;
     animation-timing-function: ease-in-out !important;
   }
+  .chat-console-shell .chat-canvas-grid { animation: chat-canvas-grid-drift 22s linear infinite !important; }
+  .chat-console-shell .chat-canvas-glow-one { animation: chat-canvas-float-one 13s ease-in-out infinite !important; }
+  .chat-console-shell .chat-canvas-glow-two { animation: chat-canvas-float-two 17s ease-in-out infinite !important; }
+  .chat-console-shell .chat-canvas-beam { animation: chat-canvas-beam-sweep 11s ease-in-out infinite !important; }
 }
