@@ -93,10 +93,13 @@ export async function POST(req) {
 - GREETINGS: Keep greetings to a single short sentence.
 - FORMAT: Avoid unnecessary headers or boilerplate sections.`
         },
-        ...finalMessages
+      ...finalMessages
       ],
       model: targetModel,
       temperature: 0.7,
+      // Groq's current on-demand tier enforces a 1,000 output-token-per-minute
+      // limit for this model. Keep the requested completion below that ceiling.
+      max_completion_tokens: 900,
       stream: true,
     });
 

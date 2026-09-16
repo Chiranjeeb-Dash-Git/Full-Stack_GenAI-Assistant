@@ -839,6 +839,10 @@ export default function Home() {
 
   return (
     <div className="chat-console-shell flex h-screen w-full bg-white text-black font-body overflow-hidden relative">
+      <div className="chat-ambient-field" aria-hidden="true">
+        <div className="chat-ambient-orb chat-ambient-orb-one" />
+        <div className="chat-ambient-orb chat-ambient-orb-two" />
+      </div>
       {/* SKETCH OVERLAY IS NOW HANDLED IN GLOBALS.CSS */}
 
       {sidebarOpen && (
