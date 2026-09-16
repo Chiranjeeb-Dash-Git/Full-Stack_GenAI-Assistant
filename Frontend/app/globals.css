@@ -443,5 +443,9 @@
 @media (prefers-reduced-motion: reduce) {
   .chat-console-shell .chat-canvas-grid,
   .chat-console-shell .chat-canvas-glow,
-  .chat-console-shell .chat-canvas-beam { animation: none; }
+  .chat-console-shell .chat-canvas-beam {
+    animation-duration: 16s !important;
+    animation-iteration-count: infinite !important;
+    animation-timing-function: ease-in-out !important;
+  }
 }
