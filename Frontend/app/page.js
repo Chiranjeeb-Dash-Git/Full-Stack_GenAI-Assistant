@@ -31,7 +31,8 @@ import {
   Play,
   Square,
   Settings,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Home as HomeIcon
 } from "lucide-react";
 
 function LandingPage({ onLaunch }) {
@@ -815,6 +816,18 @@ export default function Home() {
     setSessionTimestamp(new Date().toLocaleTimeString());
   }, []);
 
+  useEffect(() => {
+    // layout.js intentionally locks the chat viewport; release that lock for
+    // the long-form landing page so the document itself can scroll.
+    document.documentElement.style.overflow = showLanding ? "auto" : "hidden";
+    document.body.style.overflow = showLanding ? "auto" : "hidden";
+    if (showLanding) window.scrollTo({ top: 0, behavior: "instant" });
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [showLanding]);
+
   if (showLanding) return <LandingPage onLaunch={() => setShowLanding(false)} />;
 
   return (
@@ -962,6 +975,13 @@ export default function Home() {
             <div className="hidden md:flex items-center pointer-events-none">
                <span className="font-headline font-bold text-lg tracking-tight">AI CONSOLE</span>
             </div>
+            <button
+              onClick={() => setShowLanding(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors text-[10px] font-bold font-mono uppercase"
+              title="Back to home"
+            >
+              <HomeIcon size={13} /> HOME
+            </button>
           </div>
           
           <div className="flex items-center gap-3">
