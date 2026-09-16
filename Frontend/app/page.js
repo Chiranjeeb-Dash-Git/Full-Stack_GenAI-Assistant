@@ -26,7 +26,12 @@ import {
   StopCircle,
   ChevronDown,
   Moon,
-  Sun
+  Sun,
+  Pause,
+  Play,
+  Square,
+  Settings,
+  SlidersHorizontal
 } from "lucide-react";
 
 export default function Home() {
@@ -47,6 +52,21 @@ export default function Home() {
   const [editChatTitle, setEditChatTitle] = useState("");
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [voiceSettings, setVoiceSettings] = useState({
+    gender: "female",
+    language: "auto",
+    rate: 1,
+    volume: 1,
+  });
+  const [voicesReady, setVoicesReady] = useState(false);
+  const [speechState, setSpeechState] = useState({
+    key: null,
+    text: "",
+    isPaused: false,
+    progress: 0,
+  });
   
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editingMessageContent, setEditingMessageContent] = useState("");
@@ -81,8 +101,45 @@ export default function Home() {
   const recognitionRef = useRef(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const speechRef = useRef(null);
+  const speechTextRef = useRef("");
+  const speechKeyRef = useRef(null);
+  const speechOffsetRef = useRef(0);
+  const voiceSettingsLoadedKeyRef = useRef(null);
 
   const getStorageKey = () => `chat_history_${user?.email || "guest"}`;
+  const getVoiceStorageKey = () => `voice_settings_${user?.email || "guest"}`;
+
+  useEffect(() => {
+    const key = getVoiceStorageKey();
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      try {
+        setVoiceSettings(prev => ({ ...prev, ...JSON.parse(saved) }));
+      } catch (error) {
+        console.warn("Unable to load voice settings", error);
+      }
+    }
+    voiceSettingsLoadedKeyRef.current = key;
+  }, [user]);
+
+  useEffect(() => {
+    const key = getVoiceStorageKey();
+    if (voiceSettingsLoadedKeyRef.current === key) {
+      localStorage.setItem(key, JSON.stringify(voiceSettings));
+    }
+  }, [voiceSettings, user]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    const markVoicesReady = () => setVoicesReady(window.speechSynthesis.getVoices().length > 0);
+    markVoicesReady();
+    window.speechSynthesis.addEventListener("voiceschanged", markVoicesReady);
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", markVoicesReady);
+      window.speechSynthesis.cancel();
+    };
+  }, []);
 
   // Load chats whenever the user changes
   useEffect(() => {
@@ -234,12 +291,105 @@ export default function Home() {
     }
   };
 
-  const handleSpeak = (text) => {
-    if ('speechSynthesis' in window) {
+  const cleanSpeechText = (value) => {
+    if (typeof value !== "string") return "";
+    const codeBlocks = value.match(/```[\s\S]*?```/g);
+    let text = value.replace(/```[\s\S]*?```/g, codeBlocks?.length ? " Here is a code snippet; check the chat for the details. " : "");
+    text = text
+      .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+      .replace(/https?:\/\/\S+/g, "")
+      .replace(/(^|\n)\s{0,3}#{1,6}\s*/g, "$1")
+      .replace(/[*_~`]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return text;
+  };
+
+  const getSpeechLanguage = (text) => {
+    if (voiceSettings.language !== "auto") return voiceSettings.language;
+    return /[\u0900-\u097F]/.test(text) ? "hi" : "en";
+  };
+
+  const selectSpeechVoice = (language, gender) => {
+    const voices = window.speechSynthesis.getVoices();
+    const matching = voices.filter(voice => voice.lang.toLowerCase().startsWith(language));
+    const genderHints = gender === "female"
+      ? ["female", "woman", "zira", "samantha", "google hindi", "heera", "kalpana"]
+      : ["male", "man", "david", "alex", "ravi", "hemant", "google uk english male"];
+    return matching.find(voice => genderHints.some(hint => voice.name.toLowerCase().includes(hint)))
+      || matching[0]
+      || voices[0];
+  };
+
+  const stopSpeaking = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(utterance);
     }
+    speechRef.current = null;
+    speechKeyRef.current = null;
+    speechOffsetRef.current = 0;
+    setSpeechState({ key: null, text: "", isPaused: false, progress: 0 });
+  };
+
+  const speakText = (rawText, key, offset = 0) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      alert("Text-to-speech is not supported by this browser.");
+      return;
+    }
+    const text = cleanSpeechText(rawText);
+    if (!text) return;
+    const language = getSpeechLanguage(text);
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = language === "hi" ? "hi-IN" : "en-US";
+    utterance.rate = Number(voiceSettings.rate);
+    utterance.volume = Number(voiceSettings.volume);
+    const voice = selectSpeechVoice(language, voiceSettings.gender);
+    if (voice) utterance.voice = voice;
+
+    speechTextRef.current = text;
+    speechKeyRef.current = key;
+    speechOffsetRef.current = offset;
+    speechRef.current = utterance;
+    setSpeechState({ key, text, isPaused: false, progress: Math.min(100, (offset / Math.max(1, text.length)) * 100) });
+
+    utterance.onboundary = (event) => {
+      if (typeof event.charIndex === "number") {
+        setSpeechState(prev => ({ ...prev, progress: Math.min(100, ((offset + event.charIndex) / text.length) * 100) }));
+      }
+    };
+    utterance.onend = () => {
+      if (speechRef.current === utterance) {
+        speechRef.current = null;
+        speechKeyRef.current = null;
+        setSpeechState({ key: null, text: "", isPaused: false, progress: 0 });
+      }
+    };
+    utterance.onerror = () => {
+      if (speechRef.current === utterance) stopSpeaking();
+    };
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleSpeech = (text, key) => {
+    if (speechKeyRef.current === key && window.speechSynthesis.speaking) {
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+        setSpeechState(prev => ({ ...prev, isPaused: false }));
+      } else {
+        window.speechSynthesis.pause();
+        setSpeechState(prev => ({ ...prev, isPaused: true }));
+      }
+      return;
+    }
+    speakText(text, key);
+  };
+
+  const seekSpeech = (percentage) => {
+    if (!speechTextRef.current || !speechKeyRef.current) return;
+    const offset = Math.floor((Number(percentage) / 100) * speechTextRef.current.length);
+    speakText(speechTextRef.current, speechKeyRef.current, offset);
   };
 
   const saveChatTitle = (id, newTitle) => {
@@ -371,6 +521,9 @@ export default function Home() {
             } catch (e) { }
           }
         }
+      }
+      if (voiceMode && assistantText.trim()) {
+        speakText(assistantText, initialMessagesForUI.length);
       }
     } catch (err) {
       setMessages(prev => {
@@ -662,6 +815,71 @@ export default function Home() {
                 </>
               )}
             </button>
+            <button
+              onClick={() => setVoiceMode(prev => !prev)}
+              className={`flex items-center gap-2 px-3 py-1.5 border-2 border-black transition-colors text-xs font-bold font-mono tracking-tighter ${voiceMode ? "bg-black text-white shadow-[2px_2px_0px_#888]" : "bg-white hover:bg-black/5 shadow-[2px_2px_0px_#ccc]"}`}
+              title="Automatically speak assistant replies"
+            >
+              <Mic size={14} />
+              <span className="hidden sm:inline">VOICE MODE {voiceMode ? "ON" : "OFF"}</span>
+            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIsVoiceSettingsOpen(prev => !prev)}
+                className="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-black/5 transition-colors shadow-[2px_2px_0px_#ccc] text-xs font-bold font-mono tracking-tighter"
+                title="Voice settings"
+              >
+                <Settings size={14} />
+                <span className="hidden sm:inline">VOICE</span>
+              </button>
+              {isVoiceSettingsOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 p-4 bg-white border-2 border-black shadow-[4px_4px_0px_#ccc] z-50 text-black">
+                  <div className="flex items-center gap-2 mb-3 font-mono text-[10px] font-bold uppercase tracking-widest">
+                    <SlidersHorizontal size={13} /> Speech Controls
+                  </div>
+                  <label className="block mb-3 text-[10px] font-mono font-bold uppercase">
+                    Voice
+                    <select
+                      value={voiceSettings.gender}
+                      onChange={e => setVoiceSettings(prev => ({ ...prev, gender: e.target.value }))}
+                      className="w-full mt-1 border-2 border-black bg-white p-2 text-xs font-mono"
+                    >
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                  </label>
+                  <label className="block mb-3 text-[10px] font-mono font-bold uppercase">
+                    Language
+                    <select
+                      value={voiceSettings.language}
+                      onChange={e => setVoiceSettings(prev => ({ ...prev, language: e.target.value }))}
+                      className="w-full mt-1 border-2 border-black bg-white p-2 text-xs font-mono"
+                    >
+                      <option value="auto">Auto detect</option>
+                      <option value="en">English</option>
+                      <option value="hi">Hindi</option>
+                    </select>
+                  </label>
+                  <label className="block mb-3 text-[10px] font-mono font-bold uppercase">
+                    Rate: {Number(voiceSettings.rate).toFixed(1)}x
+                    <input
+                      type="range" min="0.5" max="2" step="0.1" value={voiceSettings.rate}
+                      onChange={e => setVoiceSettings(prev => ({ ...prev, rate: e.target.value }))}
+                      className="w-full mt-1 !p-0 !border-0"
+                    />
+                  </label>
+                  <label className="block text-[10px] font-mono font-bold uppercase">
+                    Volume: {Math.round(Number(voiceSettings.volume) * 100)}%
+                    <input
+                      type="range" min="0" max="1" step="0.05" value={voiceSettings.volume}
+                      onChange={e => setVoiceSettings(prev => ({ ...prev, volume: e.target.value }))}
+                      className="w-full mt-1 !p-0 !border-0"
+                    />
+                  </label>
+                  {!voicesReady && <p className="mt-3 text-[10px] text-red-600 font-mono">Loading browser voices...</p>}
+                </div>
+              )}
+            </div>
             <div className="relative">
               <button 
                 onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
@@ -849,11 +1067,11 @@ export default function Home() {
                     {message.role === "assistant" && message.content && (
                       <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
-                          onClick={() => handleSpeak(message.content)} 
+                          onClick={() => toggleSpeech(message.content, index)}
                           className="p-1.5 border border-black/20 hover:bg-black/5 text-black rounded transition-all"
                           title="Read Aloud"
                         >
-                          <Volume2 size={12} />
+                          {speechState.key === index && !speechState.isPaused ? <Pause size={12} /> : <Volume2 size={12} />}
                         </button>
                         {index === messages.length - 1 && !isLoading && (
                           <button 
@@ -865,6 +1083,34 @@ export default function Home() {
                             <span className="text-[10px] font-bold uppercase">Regenerate</span>
                           </button>
                         )}
+                      </div>
+                    )}
+                    {message.role === "assistant" && speechState.key === index && (
+                      <div className="mt-2 flex items-center gap-2 w-full max-w-sm border-2 border-black p-2 bg-white text-black">
+                        <button
+                          onClick={() => toggleSpeech(message.content, index)}
+                          className="p-1 border border-black hover:bg-black hover:text-white"
+                          title={speechState.isPaused ? "Play" : "Pause"}
+                        >
+                          {speechState.isPaused ? <Play size={12} /> : <Pause size={12} />}
+                        </button>
+                        <input
+                          type="range" min="0" max="100" value={speechState.progress}
+                          onChange={e => seekSpeech(e.target.value)}
+                          className="flex-1 !p-0 !border-0"
+                          aria-label="Speech progress"
+                        />
+                        <span className="text-[9px] font-mono w-8 text-right">{Math.round(speechState.progress)}%</span>
+                        <Volume2 size={12} />
+                        <input
+                          type="range" min="0" max="1" step="0.05" value={voiceSettings.volume}
+                          onChange={e => setVoiceSettings(prev => ({ ...prev, volume: e.target.value }))}
+                          className="w-14 !p-0 !border-0"
+                          aria-label="Speech volume"
+                        />
+                        <button onClick={stopSpeaking} className="p-1 border border-black hover:bg-red-600 hover:text-white" title="Stop">
+                          <Square size={11} />
+                        </button>
                       </div>
                     )}
                   </div>

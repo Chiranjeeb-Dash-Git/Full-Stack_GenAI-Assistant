@@ -33,6 +33,7 @@
 
 * 💬 **Real-time AI Streaming:** Lightning-fast token-by-token stream architecture leveraging LLaMA 3.3 (70B) via the highly performant Groq API.
 * 🎙️ **WhatsApp-Style Voice Notes (NEW!):** Seamlessly send voice messages just like WhatsApp. Click the mic to record, and the app instantly embeds an audio player in the chat while using the **OpenAI Whisper API** via Groq to invisibly transcribe and fetch the AI's response!
+* 🔊 **Voice Assistant & Text-to-Speech:** Read any assistant response aloud with browser-native speech, selectable male/female voices, English/Hindi/automatic language detection, play/pause, approximate seeking, volume, speech rate, and an automatic Voice Mode that speaks replies after microphone conversations.
 * ⌨️ **Live Dictation:** Speak commands using native browser `SpeechRecognition` to watch your words type out in real-time.
 * 📂 **Multi-Modal Document Context (OCR):** Contextual depth! Upload multiple PDFs, texts, and explicit image buffers *concurrently* to analyze dense source material.
 * 📝 **Intelligent Prompt Branching:** Change your mind and re-edit any previous text prompt on the fly, instantly erasing future nodes to fork an entirely new conversation timeline.
