@@ -34,6 +34,104 @@ import {
   SlidersHorizontal
 } from "lucide-react";
 
+function LandingPage({ onLaunch }) {
+  const visualRef = useRef(null);
+  const cardsRef = useRef(null);
+
+  useEffect(() => {
+    const visual = visualRef.current;
+    const cards = cardsRef.current?.querySelectorAll(".landing-card") || [];
+    const onScroll = () => {
+      const y = window.scrollY;
+      document.querySelectorAll(".landing-orb-wrap").forEach(orb => {
+        const speed = Number(orb.dataset.speed || 0.2);
+        orb.style.transform = `translate3d(0, ${y * speed * -0.3}px, 0)`;
+      });
+      if (visual) {
+        const rotate = Math.min(y * 0.05, 18);
+        visual.style.transform = `rotateY(${rotate}deg) rotateX(${-rotate * 0.4}deg)`;
+      }
+    };
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+        observer.unobserve(entry.target);
+      }
+    }), { threshold: 0.15, rootMargin: "0px 0px -60px 0px" });
+    cards.forEach(card => observer.observe(card));
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      observer.disconnect();
+    };
+  }, []);
+
+  const capabilities = [
+    ["⚡", "Real-time streaming", "Answers arrive token by token over Groq inference — no spinners, no waiting."],
+    ["🎙", "Voice in, voice out", "Record like a voice note; Whisper transcribes it, and the console can speak its reply back."],
+    ["📄", "Document intelligence", "Drop in PDFs, text, or images and the assistant reasons across all of it together."],
+    ["🌿", "Prompt branching", "Edit an earlier message to fork the conversation cleanly down a new path."],
+    ["✦", "In-chat imagery", "Type /image and get an illustration rendered straight into the thread."],
+    ["◐", "Persistent memory", "Every conversation is saved, renamable, and resumes exactly where it left off."],
+  ];
+
+  return (
+    <main className="landing-shell">
+      <div className="landing-field" aria-hidden="true">
+        <div className="landing-orb-wrap landing-o1" data-speed=".15"><div className="landing-orb" /></div>
+        <div className="landing-orb-wrap landing-o2" data-speed=".3"><div className="landing-orb" /></div>
+        <div className="landing-orb-wrap landing-o3" data-speed=".45"><div className="landing-orb" /></div>
+        <div className="landing-orb-wrap landing-o4" data-speed=".2"><div className="landing-orb" /></div>
+      </div>
+
+      <header className="landing-header">
+        <div className="landing-brand"><span className="landing-brand-mark" /> Full-Stack GenAI Assistant</div>
+        <nav className="landing-nav">
+          <a href="#capabilities">Capabilities</a>
+          <a href="#voice">Voice</a>
+          <a href="#stack">Stack</a>
+          <button onClick={onLaunch} className="landing-nav-cta">Launch App</button>
+        </nav>
+      </header>
+
+      <section className="landing-hero">
+        <div>
+          <div className="landing-eyebrow">Qwen 3.8 · Groq LPU Inference</div>
+          <h1>Intelligence, <em>rendered</em><br />in real time.</h1>
+          <p className="landing-lede">A full-stack AI console built for instant, streaming conversation — type, upload, or speak, and watch every answer arrive as it&apos;s thought.</p>
+          <div className="landing-ctas">
+            <button onClick={onLaunch} className="landing-btn landing-primary">Open the console <span>→</span></button>
+            <a href="https://github.com/Chiranjeeb-Dash-Git/Full-Stack_GenAI-Assistant" target="_blank" rel="noreferrer" className="landing-btn landing-ghost">View source</a>
+          </div>
+        </div>
+        <div className="landing-visual" ref={visualRef}>
+          <div className="landing-ring landing-ring-two" />
+          <div className="landing-ring landing-ring-one" />
+          <div className="landing-sphere" />
+          <div className="landing-float landing-float-one"><span /> <b>Streaming</b>&nbsp; live</div>
+          <div className="landing-float landing-float-two"><span /> Voice reply <b>ready</b></div>
+        </div>
+      </section>
+
+      <div className="landing-marquee"><div><span>Streaming replies</span><span>Voice in &amp; out</span><span>Document intelligence</span><span>Image generation</span><span>Persistent memory</span><span>Streaming replies</span><span>Voice in &amp; out</span><span>Document intelligence</span></div></div>
+
+      <section id="capabilities">
+        <div className="landing-section-head"><div className="landing-eyebrow">Capabilities</div><h2>One continuous workspace, not six bolted-on tools.</h2><p>Every feature below lives inside the same conversation thread.</p></div>
+        <div className="landing-grid" ref={cardsRef}>{capabilities.map(([icon, title, description], index) => <article className="landing-card" key={title} style={{ transitionDelay: `${(index % 3) * 90}ms` }}><div className="landing-card-icon">{icon}</div><h3>{title}</h3><p>{description}</p></article>)}</div>
+      </section>
+
+      <section id="voice">
+        <div className="landing-voice-section"><div className="landing-voice-wrap"><div className="landing-waveform">{[40, 75, 100, 55, 88, 35, 95, 60, 78, 45, 65].map((height, i) => <span key={i} style={{ height: `${height}%`, animationDelay: `${i / 10}s` }} />)}</div><div className="landing-voice-copy"><h2>Talk to it. It talks back.</h2><p>Say something and the console transcribes, replies in text, and speaks the answer aloud — choose the voice and language.</p><div className="landing-tags"><span>EN — English</span><span>HI — हिंदी</span><span>Male / Female voice</span><span>Play · Pause · Seek · Volume</span></div></div></div></div>
+      </section>
+
+      <section id="stack"><div className="landing-stats"><div><strong>Qwen</strong><small>multimodal inference</small></div><div><strong>&lt;1s</strong><small>first-token latency</small></div><div><strong>2</strong><small>voice languages</small></div><div><strong>∞</strong><small>saved sessions</small></div></div></section>
+
+      <section><div className="landing-final"><h2>Your next conversation is already streaming.</h2><div className="landing-ctas"><button onClick={onLaunch} className="landing-btn landing-final-primary">Open the console</button><a href="https://github.com/Chiranjeeb-Dash-Git/Full-Stack_GenAI-Assistant" target="_blank" rel="noreferrer" className="landing-btn landing-final-ghost">Read the source</a></div></div></section>
+      <footer className="landing-footer"><span>Full-Stack GenAI Assistant — Built by Chiranjeeb Dash</span><a href="https://github.com/Chiranjeeb-Dash-Git/Full-Stack_GenAI-Assistant" target="_blank" rel="noreferrer">github.com/Chiranjeeb-Dash-Git</a></footer>
+    </main>
+  );
+}
+
 export default function Home() {
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
@@ -52,6 +150,7 @@ export default function Home() {
   const [editChatTitle, setEditChatTitle] = useState("");
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
   const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [voiceSettings, setVoiceSettings] = useState({
@@ -715,6 +814,8 @@ export default function Home() {
     setMounted(true);
     setSessionTimestamp(new Date().toLocaleTimeString());
   }, []);
+
+  if (showLanding) return <LandingPage onLaunch={() => setShowLanding(false)} />;
 
   return (
     <div className="flex h-screen w-full bg-white text-black font-body overflow-hidden relative">
