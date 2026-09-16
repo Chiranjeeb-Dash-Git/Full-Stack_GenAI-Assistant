@@ -106,6 +106,8 @@ export default function Home() {
   const speechKeyRef = useRef(null);
   const speechOffsetRef = useRef(0);
   const voiceSettingsLoadedKeyRef = useRef(null);
+  const voiceFinalTranscriptRef = useRef("");
+  const voiceLiveTranscriptRef = useRef("");
 
   const getStorageKey = () => `chat_history_${user?.email || "guest"}`;
   const getVoiceStorageKey = () => `voice_settings_${user?.email || "guest"}`;
@@ -258,36 +260,87 @@ export default function Home() {
     }
   };
 
+  const submitVoiceQuery = (transcribedText) => {
+    const text = transcribedText.trim();
+    if (!text || isRequestActive.current) return;
+    const displayMessage = { role: "user", content: `🎙️ ${text}` };
+    const bodyPayload = { messages: [...messages, { role: "user", content: text }] };
+    setInput("");
+    runAssistantFetch(bodyPayload, [...messages, displayMessage]);
+  };
+
+  const startMediaRecorderFallback = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      mediaRecorderRef.current.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        await processAudioBlob(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+      mediaRecorderRef.current.start();
+      setIsListening(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+      alert("Microphone access denied or not supported.");
+    }
+  };
+
   const toggleListening = async () => {
     if (isListening) {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-        mediaRecorderRef.current.stop();
+      if (recognitionRef.current) recognitionRef.current.stop();
+      if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      await startMediaRecorderFallback();
+      return;
+    }
+
+    voiceFinalTranscriptRef.current = "";
+    voiceLiveTranscriptRef.current = "";
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.lang = voiceSettings.language === "hi" ? "hi-IN" : "en-IN";
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const result = event.results[i];
+        if (result.isFinal) voiceFinalTranscriptRef.current += `${result[0].transcript} `;
+        else interim += result[0].transcript;
+      }
+      voiceLiveTranscriptRef.current = `${voiceFinalTranscriptRef.current}${interim}`.trim();
+      setInput(voiceLiveTranscriptRef.current);
+    };
+    recognition.onerror = (event) => {
+      if (event.error !== "no-speech" && event.error !== "aborted") {
+        console.error("Speech recognition error:", event.error);
+        alert(event.error === "not-allowed" ? "Please allow microphone access in your browser." : "I could not hear that. Please try again.");
       }
       setIsListening(false);
-    } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        audioChunksRef.current = [];
-
-        mediaRecorderRef.current.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
-
-        mediaRecorderRef.current.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          await processAudioBlob(audioBlob);
-          stream.getTracks().forEach(track => track.stop());
-        };
-
-        mediaRecorderRef.current.start();
-        setIsListening(true);
-      } catch (err) {
-        console.error("Error accessing microphone:", err);
-        alert("Microphone access denied or not supported.");
-      }
+    };
+    recognition.onend = () => {
+      const transcript = voiceLiveTranscriptRef.current.trim();
+      recognitionRef.current = null;
+      setIsListening(false);
+      setInput("");
+      if (transcript) submitVoiceQuery(transcript);
+    };
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+    } catch (error) {
+      recognitionRef.current = null;
+      await startMediaRecorderFallback();
     }
   };
 
@@ -1124,6 +1177,18 @@ export default function Home() {
         {/* Terminal Input */}
         <div className="absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 md:px-6 bg-gradient-to-t from-white via-white to-white z-20">
           <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
+            {isListening && (
+              <div className="mb-3 flex items-center gap-3 border-2 border-red-500 bg-red-50 px-4 py-3 text-red-600 shadow-[4px_4px_0px_#fca5a5] animate-pulse">
+                <span className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
+                </span>
+                <span className="font-mono text-[11px] font-bold uppercase tracking-widest">Listening... speak now</span>
+                <span className="ml-auto flex items-end gap-0.5 h-4" aria-hidden="true">
+                  {[1, 2, 3, 4, 5].map(bar => <span key={bar} className="w-1 bg-red-500 animate-bounce" style={{ height: `${bar * 3}px`, animationDelay: `${bar * 80}ms` }} />)}
+                </span>
+              </div>
+            )}
             {(attachedFiles.length > 0 || isProcessingFile) && (
               <div className="mb-3 flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 duration-300">
                 {isProcessingFile && (
@@ -1183,10 +1248,10 @@ export default function Home() {
                 <button
                    type="button"
                    onClick={toggleListening}
-                   className={`text-black hover:scale-110 transition-transform p-2 border-2 ${isListening ? 'border-red-500 bg-red-50 animate-pulse' : 'border-black bg-white'}`}
-                   title="Voice Typing"
+                   className={`relative text-black hover:scale-110 transition-transform p-2 border-2 ${isListening ? 'border-red-500 bg-red-50 animate-pulse ring-4 ring-red-200' : 'border-black bg-white'}`}
+                   title={isListening ? "Stop listening" : "Start voice assistant"}
                  >
-                   {isListening ? <Mic size={20} className="text-red-500" /> : <MicOff size={20} />}
+                   {isListening ? <MicOff size={20} className="text-red-500" /> : <Mic size={20} />}
                 </button>
                 {isLoading ? (
                   <button
