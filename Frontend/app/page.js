@@ -819,11 +819,17 @@ export default function Home() {
   useEffect(() => {
     // layout.js intentionally locks the chat viewport; release that lock for
     // the long-form landing page so the document itself can scroll.
-    document.documentElement.style.overflow = showLanding ? "auto" : "hidden";
-    document.body.style.overflow = showLanding ? "auto" : "hidden";
+    document.documentElement.style.height = showLanding ? "auto" : "100%";
+    document.documentElement.style.overflow = showLanding ? "visible" : "hidden";
+    document.body.style.height = showLanding ? "auto" : "100vh";
+    document.body.style.minHeight = showLanding ? "100vh" : "";
+    document.body.style.overflow = showLanding ? "visible" : "hidden";
     if (showLanding) window.scrollTo({ top: 0, behavior: "instant" });
     return () => {
+      document.documentElement.style.height = "";
       document.documentElement.style.overflow = "";
+      document.body.style.height = "";
+      document.body.style.minHeight = "";
       document.body.style.overflow = "";
     };
   }, [showLanding]);
