@@ -67,6 +67,7 @@ export default function Home() {
     isPaused: false,
     progress: 0,
   });
+  const [microphoneError, setMicrophoneError] = useState("");
   
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editingMessageContent, setEditingMessageContent] = useState("");
@@ -108,6 +109,10 @@ export default function Home() {
   const voiceSettingsLoadedKeyRef = useRef(null);
   const voiceFinalTranscriptRef = useRef("");
   const voiceLiveTranscriptRef = useRef("");
+  const audioContextRef = useRef(null);
+  const silenceCheckRef = useRef(null);
+  const speechDetectedRef = useRef(false);
+  const recordingStartedAtRef = useRef(0);
 
   const getStorageKey = () => `chat_history_${user?.email || "guest"}`;
   const getVoiceStorageKey = () => `voice_settings_${user?.email || "guest"}`;
@@ -228,6 +233,9 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
+      if (voiceSettings.language === "hi" || voiceSettings.language === "en") {
+        formData.append("language", voiceSettings.language);
+      }
 
       const response = await fetch("/api/transcribe", {
         method: "POST",
@@ -237,7 +245,11 @@ export default function Home() {
       if (!response.ok) throw new Error("Transcription failed");
       
       const data = await response.json();
-      const transcribedText = data.text || "[Inaudible]";
+      const transcribedText = data.text?.trim() || "";
+      if (!transcribedText) {
+        setMicrophoneError("No speech was detected. Keep the earbuds connected and speak closer to the microphone.");
+        return;
+      }
       const audioUrl = URL.createObjectURL(audioBlob);
       
       const displayMessage = {
@@ -271,22 +283,73 @@ export default function Home() {
 
   const startMediaRecorderFallback = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      setMicrophoneError("");
+      if (!navigator.mediaDevices?.getUserMedia) throw new Error("This browser does not expose microphone access.");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 }
+      });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/webm";
+      mediaRecorderRef.current = new MediaRecorder(stream, { mimeType });
       audioChunksRef.current = [];
+      speechDetectedRef.current = false;
+      recordingStartedAtRef.current = Date.now();
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) audioChunksRef.current.push(event.data);
       };
       mediaRecorderRef.current.onstop = async () => {
+        setIsListening(false);
+        if (silenceCheckRef.current) window.clearInterval(silenceCheckRef.current);
+        silenceCheckRef.current = null;
+        if (audioContextRef.current) {
+          await audioContextRef.current.close().catch(() => {});
+          audioContextRef.current = null;
+        }
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        await processAudioBlob(audioBlob);
+        if (audioBlob.size > 1000) await processAudioBlob(audioBlob);
         stream.getTracks().forEach(track => track.stop());
       };
       mediaRecorderRef.current.start();
       setIsListening(true);
+
+      // Use the same physical stream for level detection so earbuds and USB
+      // microphones work consistently. Stop after ~1.2 seconds of silence.
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass) {
+        const audioContext = new AudioContextClass();
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        audioContext.createMediaStreamSource(stream).connect(analyser);
+        audioContextRef.current = audioContext;
+        const samples = new Uint8Array(analyser.fftSize);
+        let lastSpeechAt = Date.now();
+        silenceCheckRef.current = window.setInterval(() => {
+          analyser.getByteTimeDomainData(samples);
+          let sum = 0;
+          for (let i = 0; i < samples.length; i += 1) {
+            const normalized = (samples[i] - 128) / 128;
+            sum += normalized * normalized;
+          }
+          const volume = Math.sqrt(sum / samples.length);
+          const now = Date.now();
+          if (volume > 0.018) {
+            speechDetectedRef.current = true;
+            lastSpeechAt = now;
+          }
+          const elapsed = now - recordingStartedAtRef.current;
+          if ((speechDetectedRef.current && now - lastSpeechAt > 1200) || elapsed > 20000) {
+            if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+          }
+        }, 100);
+      }
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      alert("Microphone access denied or not supported.");
+      setIsListening(false);
+      const message = err.name === "NotAllowedError"
+        ? "Microphone permission is blocked. Allow microphone access for this site, then try again."
+        : err.message || "Microphone access is unavailable.";
+      setMicrophoneError(message);
     }
   };
 
@@ -296,52 +359,11 @@ export default function Home() {
       if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
       return;
     }
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      await startMediaRecorderFallback();
-      return;
-    }
-
-    voiceFinalTranscriptRef.current = "";
-    voiceLiveTranscriptRef.current = "";
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-    recognition.lang = voiceSettings.language === "hi" ? "hi-IN" : "en-IN";
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        const result = event.results[i];
-        if (result.isFinal) voiceFinalTranscriptRef.current += `${result[0].transcript} `;
-        else interim += result[0].transcript;
-      }
-      voiceLiveTranscriptRef.current = `${voiceFinalTranscriptRef.current}${interim}`.trim();
-      setInput(voiceLiveTranscriptRef.current);
-    };
-    recognition.onerror = (event) => {
-      if (event.error !== "no-speech" && event.error !== "aborted") {
-        console.error("Speech recognition error:", event.error);
-        alert(event.error === "not-allowed" ? "Please allow microphone access in your browser." : "I could not hear that. Please try again.");
-      }
-      setIsListening(false);
-    };
-    recognition.onend = () => {
-      const transcript = voiceLiveTranscriptRef.current.trim();
-      recognitionRef.current = null;
-      setIsListening(false);
-      setInput("");
-      if (transcript) submitVoiceQuery(transcript);
-    };
-    recognitionRef.current = recognition;
-    try {
-      recognition.start();
-    } catch (error) {
-      recognitionRef.current = null;
-      await startMediaRecorderFallback();
-    }
+    // Whisper receives the actual microphone recording and is more reliable
+    // than browser-only recognition with earbuds, accents, and Hindi speech.
+    setInput("");
+    setMicrophoneError("");
+    await startMediaRecorderFallback();
   };
 
   const cleanSpeechText = (value) => {
@@ -1187,6 +1209,12 @@ export default function Home() {
                 <span className="ml-auto flex items-end gap-0.5 h-4" aria-hidden="true">
                   {[1, 2, 3, 4, 5].map(bar => <span key={bar} className="w-1 bg-red-500 animate-bounce" style={{ height: `${bar * 3}px`, animationDelay: `${bar * 80}ms` }} />)}
                 </span>
+              </div>
+            )}
+            {microphoneError && !isListening && (
+              <div className="mb-3 flex items-center justify-between gap-3 border-2 border-red-600 bg-red-50 px-4 py-3 text-red-700 font-mono text-[10px] font-bold uppercase">
+                <span>{microphoneError}</span>
+                <button type="button" onClick={() => setMicrophoneError("")} className="border border-red-600 px-2 py-1 hover:bg-red-600 hover:text-white">Dismiss</button>
               </div>
             )}
             {(attachedFiles.length > 0 || isProcessingFile) && (

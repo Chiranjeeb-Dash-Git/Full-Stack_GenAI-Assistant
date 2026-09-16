@@ -11,6 +11,7 @@ export async function POST(req) {
     }
     const formData = await req.formData();
     const file = formData.get("audio");
+    const language = formData.get("language");
 
     if (!file) {
       return NextResponse.json(
@@ -19,10 +20,13 @@ export async function POST(req) {
       );
     }
 
-    const transcription = await client.audio.transcriptions.create({
+    const transcriptionOptions = {
       file: file,
       model: "whisper-large-v3",
-    });
+    };
+    if (language === "en" || language === "hi") transcriptionOptions.language = language;
+
+    const transcription = await client.audio.transcriptions.create(transcriptionOptions);
 
     return NextResponse.json({ text: transcription.text });
   } catch (error) {
