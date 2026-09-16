@@ -1,15 +1,24 @@
 import { Groq } from "groq-sdk";
 import { NextResponse } from "next/server";
 
-const client = new Groq({
-  apiKey: process.env.GROK_API_KEY,
-});
+const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY;
+const client = apiKey ? new Groq({ apiKey }) : null;
 
 export const runtime = 'nodejs';
 
 export async function POST(req) {
   try {
-    const { messages } = await req.json();
+    if (!client) {
+      return NextResponse.json(
+        { error: "Missing GROQ_API_KEY environment variable." },
+        { status: 503 }
+      );
+    }
+
+    const { messages, model } = await req.json();
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json({ error: "At least one message is required." }, { status: 400 });
+    }
     const today = new Date().toLocaleDateString('en-US', { 
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
     });
@@ -66,7 +75,9 @@ export async function POST(req) {
     const lastMsg = messages[messages.length - 1];
     const isVision = Array.isArray(lastMsg.content) && lastMsg.content.some(c => c.type === 'image_url');
     // Using Llama 4 Scout for vision and Llama 3.3 for ultra-fast text
-    const targetModel = isVision ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile";
+    // The previous Llama models were retired by Groq in August 2026. Qwen 3.8
+    // supports both text and image input, so one current model handles both paths.
+    const targetModel = model === "openai/gpt-oss-120b" ? model : "qwen/qwen3.8-27b";
 
     // 4. Intelligence Execution
     const response = await client.chat.completions.create({
@@ -111,11 +122,10 @@ export async function POST(req) {
     });
 
   } catch (error) {
-    console.error("Critical System failure:", error.message);
-    // Absolute Failsafe Response
-    return new NextResponse(JSON.stringify({ error: "System Core Offline. Retrying boot sequence..." }), { 
-      status: 500,
-      headers: { "Content-Type": "application/json" }
-    });
+    console.error("Critical System failure:", error);
+    return NextResponse.json(
+      { error: error?.error?.message || error?.message || "The AI provider failed to process the request." },
+      { status: error?.status >= 400 && error.status < 500 ? error.status : 502 }
+    );
   }
 }

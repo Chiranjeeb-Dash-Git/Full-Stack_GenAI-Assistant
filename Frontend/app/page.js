@@ -41,7 +41,7 @@ export default function Home() {
   const [isAuthVisible, setIsAuthVisible] = useState(true);
   const [user, setUser] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [selectedModel, setSelectedModel] = useState("qwen/qwen3.8-27b");
   const [isListening, setIsListening] = useState(false);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editChatTitle, setEditChatTitle] = useState("");
@@ -336,7 +336,14 @@ export default function Home() {
         signal: abortControllerRef.current.signal,
       });
 
-      if (!response.ok) throw new Error("Connection failed");
+      if (!response.ok) {
+        let errorMessage = `Request failed (${response.status})`;
+        try {
+          const errorBody = await response.json();
+          if (errorBody?.error) errorMessage = errorBody.error;
+        } catch (e) { }
+        throw new Error(errorMessage);
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -371,7 +378,7 @@ export default function Home() {
         if (updated[updated.length - 1].role === "assistant") {
           updated[updated.length - 1].content = err.name === "AbortError" 
             ? (updated[updated.length - 1].content || "Generation stopped.")
-            : "Error: Could not reach intelligence core.";
+            : `Error: ${err.message || "Could not reach intelligence core."}`;
         }
         return updated;
       });
@@ -661,23 +668,23 @@ export default function Home() {
               className="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-black/5 transition-colors shadow-[2px_2px_0px_#ccc] text-xs font-bold font-mono tracking-tighter"
             >
               <Bot size={14} />
-              {selectedModel === "llama-3.3-70b-versatile" ? "LLaMA 70B Fast" : selectedModel}
+              {selectedModel === "qwen/qwen3.8-27b" ? "Qwen 3.8 Multimodal" : selectedModel}
               <ChevronDown size={14} />
             </button>
             
             {isModelDropdownOpen && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-white border-2 border-black shadow-[4px_4px_0px_#ccc] flex flex-col z-50">
                 <button 
-                  onClick={() => { setSelectedModel("llama-3.3-70b-versatile"); setIsModelDropdownOpen(false); }}
-                  className={`text-left px-4 py-2 font-mono text-[10px] uppercase font-bold hover:bg-black/5 ${selectedModel === "llama-3.3-70b-versatile" ? "text-primary border-r-4 border-black font-black bg-black/5" : "text-black"}`}
+                  onClick={() => { setSelectedModel("qwen/qwen3.8-27b"); setIsModelDropdownOpen(false); }}
+                  className={`text-left px-4 py-2 font-mono text-[10px] uppercase font-bold hover:bg-black/5 ${selectedModel === "qwen/qwen3.8-27b" ? "text-primary border-r-4 border-black font-black bg-black/5" : "text-black"}`}
                 >
-                  LLaMA 70B Fast
+                  Qwen 3.8 Multimodal
                 </button>
                 <button 
-                  onClick={() => { setSelectedModel("llama-8b-8192"); setIsModelDropdownOpen(false); }}
-                  className={`text-left px-4 py-2 font-mono text-[10px] uppercase font-bold hover:bg-black/5 ${selectedModel === "llama-8b-8192" ? "text-primary border-r-4 border-black font-black bg-black/5" : "text-black"}`}
+                  onClick={() => { setSelectedModel("openai/gpt-oss-120b"); setIsModelDropdownOpen(false); }}
+                  className={`text-left px-4 py-2 font-mono text-[10px] uppercase font-bold hover:bg-black/5 ${selectedModel === "openai/gpt-oss-120b" ? "text-primary border-r-4 border-black font-black bg-black/5" : "text-black"}`}
                 >
-                  LLaMA 8b Light
+                  GPT OSS 120B
                 </button>
               </div>
             )}

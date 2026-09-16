@@ -89,7 +89,7 @@ Full-Stack_GenAI-Assistant/
 3. **Configure Environment Variables:**  
    Create a `.env.local` file in the `Frontend` directory and add your API keys:
    ```env
-   GROK_API_KEY="your_groq_api_key_here"
+   GROQ_API_KEY="your_groq_api_key_here"
    ```
 4. **Boot the Development Server:**
    ```bash
@@ -102,6 +102,13 @@ Full-Stack_GenAI-Assistant/
 ## 🌍 Vercel Deployment
 
 This project is deeply optimized for serverless edge deployment on **Vercel**.
+
+1. Fork this repository.
+2. Import your fork into [Vercel](https://vercel.com/new).
+3. Set the **Root Directory** to `Frontend`.
+4. The **Framework Preset** should automatically detect `Next.js`.
+5. Add your `GROQ_API_KEY` to the Environment Variables settings.
+6. Click **Deploy** ✅.
 
 ---
 

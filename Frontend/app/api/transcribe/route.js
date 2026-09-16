@@ -1,12 +1,14 @@
 import { Groq } from "groq-sdk";
 import { NextResponse } from "next/server";
 
-const client = new Groq({
-  apiKey: process.env.GROK_API_KEY,
-});
+const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY;
+const client = apiKey ? new Groq({ apiKey }) : null;
 
 export async function POST(req) {
   try {
+    if (!client) {
+      return NextResponse.json({ error: "Missing GROQ_API_KEY environment variable." }, { status: 503 });
+    }
     const formData = await req.formData();
     const file = formData.get("audio");
 

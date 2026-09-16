@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 const client = new OpenAI({
-    apiKey: process.env.GROK_API_KEY,
+    apiKey: process.env.GROQ_API_KEY || process.env.GROK_API_KEY,
     baseURL: 'https://api.groq.com/openai/v1',
 });
 
@@ -66,7 +66,7 @@ async function performSearch(query) {
 app.post('/api/chat', async (req, res) => {
     try {
         let { messages, model } = req.body;
-        const selectedModel = model || 'llama-3.3-70b-versatile';
+        const selectedModel = model === 'openai/gpt-oss-120b' ? model : 'qwen/qwen3.8-27b';
 
         // Clean previous messages to remove any unwanted branding from the context
         const cleanedMessages = messages.map(msg => ({
