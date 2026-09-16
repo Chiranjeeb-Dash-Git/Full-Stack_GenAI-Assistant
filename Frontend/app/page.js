@@ -1123,6 +1123,12 @@ export default function Home() {
         </div>
 
         <div className="chat-scroll-area flex-1 overflow-y-auto custom-scrollbar">
+          <div className="chat-canvas-visual" aria-hidden="true">
+            <div className="chat-canvas-grid" />
+            <div className="chat-canvas-glow chat-canvas-glow-one" />
+            <div className="chat-canvas-glow chat-canvas-glow-two" />
+            <div className="chat-canvas-beam" />
+          </div>
           {messages.length === 0 ? (
             <div className="min-h-full flex flex-col items-center pt-4 pb-32 px-4 md:px-8">
               <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath">
