@@ -1356,11 +1356,11 @@ export default function Home() {
           )}
         </div>
 
-        {/* Terminal Input */}
-        <div className="chat-composer-wrap absolute bottom-0 left-0 w-full pt-16 pb-6 px-4 md:px-6 bg-gradient-to-t from-white via-white to-white z-20">
-          <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
+        {/* Terminal Input — Rectangular Cyber Ivory-Green Design */}
+        <div className="chat-composer-wrap absolute bottom-0 left-0 w-full pt-12 pb-6 px-4 md:px-8 z-20">
+          <form onSubmit={handleSubmit} className="mx-auto max-w-4xl">
             {isListening && (
-              <div className="mb-3 flex items-center gap-3 border-2 border-red-500 bg-red-50 px-4 py-3 text-red-600 shadow-[4px_4px_0px_#fca5a5] animate-pulse">
+              <div className="mb-3 flex items-center gap-3 border-2 border-red-500 bg-red-950/80 px-4 py-3 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-pulse rounded-lg">
                 <span className="relative flex h-3 w-3">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                   <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
@@ -1372,24 +1372,24 @@ export default function Home() {
               </div>
             )}
             {microphoneError && !isListening && (
-              <div className="mb-3 flex items-center justify-between gap-3 border-2 border-red-600 bg-red-50 px-4 py-3 text-red-700 font-mono text-[10px] font-bold uppercase">
+              <div className="mb-3 flex items-center justify-between gap-3 border-2 border-red-600 bg-red-950/90 px-4 py-3 text-red-300 font-mono text-[10px] font-bold uppercase rounded-lg">
                 <span>{microphoneError}</span>
-                <button type="button" onClick={() => setMicrophoneError("")} className="border border-red-600 px-2 py-1 hover:bg-red-600 hover:text-white">Dismiss</button>
+                <button type="button" onClick={() => setMicrophoneError("")} className="border border-red-500 px-2 py-1 hover:bg-red-600 hover:text-white">Dismiss</button>
               </div>
             )}
             {(attachedFiles.length > 0 || isProcessingFile) && (
               <div className="mb-3 flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 duration-300">
                 {isProcessingFile && (
-                  <div className="flex items-center gap-2 p-2 bg-white border-2 border-black text-black shadow-[2px_2px_0px_#888]">
-                    <Loader2 className="animate-spin" size={16} />
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Analyzing_Buffer...</span>
+                  <div className="flex items-center gap-2 p-2 bg-[#0A140E] border-2 border-[#D4AF37] text-[#E2ECE5] shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                    <Loader2 className="animate-spin text-[#D4AF37]" size={16} />
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#D4AF37]">Analyzing_Buffer...</span>
                   </div>
                 )}
                 {attachedFiles.map((file, i) => (
-                  <div key={i} className="flex items-center gap-2 p-2 bg-white border-2 border-black text-black max-w-[200px] shadow-[2px_2px_0px_#888]">
-                    {file.type === "IMAGE" ? <ImageIcon size={14} className="shrink-0" /> : <FileText size={14} className="shrink-0" />}
+                  <div key={i} className="flex items-center gap-2 p-2 bg-[#0A140E] border-2 border-[#D4AF37] text-[#E2ECE5] max-w-[200px] shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                    {file.type === "IMAGE" ? <ImageIcon size={14} className="shrink-0 text-[#D4AF37]" /> : <FileText size={14} className="shrink-0 text-[#D4AF37]" />}
                     <span className="text-[10px] font-mono font-bold uppercase truncate">{file.name}</span>
-                    <button type="button" onClick={() => removeAttachedFile(i)} className="p-1 hover:bg-black/5 rounded">
+                    <button type="button" onClick={() => removeAttachedFile(i)} className="p-1 hover:bg-white/10 rounded text-[#D4AF37]">
                       <X size={12} />
                     </button>
                   </div>
@@ -1397,70 +1397,74 @@ export default function Home() {
               </div>
             )}
 
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-black hover:scale-110 transition-transform p-2 border-2 border-black bg-white"
-                >
-                  <Paperclip size={20} />
-                </button>
-                <input type="file" multiple ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*,.txt,.md,.js,.json,audio/*" />
+            <div className="flex items-center gap-3 md:gap-4">
+              {/* Square Attach Button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-11 h-11 shrink-0 flex items-center justify-center bg-white text-black border-2 border-black hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all shadow-[0_4px_14px_rgba(0,0,0,0.5)]"
+                title="Attach Files"
+              >
+                <Paperclip size={20} className="stroke-[2.2]" />
+              </button>
+              <input type="file" multiple ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*,.txt,.md,.js,.json,audio/*" />
 
-                <div
-                  className="flex-grow flex items-start bg-white px-4 py-3 border-2 border-black focus-within:ring-1 focus-within:ring-black transition-colors group relative cursor-text min-h-[48px]"
-                  onClick={() => textareaRef.current?.focus()}
-                >
-                  <div className="relative flex-grow min-h-[1.5rem] font-mono text-xs">
-                    {/* Hidden Textarea for Input Handling */}
-                    <textarea
-                      ref={textareaRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder={input ? "" : "How may I assist you?"}
-                      className="absolute inset-0 w-full h-full opacity-0 z-10 font-mono text-xs cursor-text resize-none bg-transparent border-0 ring-0 focus:ring-0 outline-none p-0"
-                      rows={1}
-                    />
+              {/* Main Rectangular White/Ivory Input Box with Golden/Emerald Glow Border */}
+              <div
+                className="flex-grow flex items-center bg-white border-2 border-[#000000] focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/50 transition-all cursor-text min-h-[44px] px-4 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.6)]"
+                onClick={() => textareaRef.current?.focus()}
+              >
+                <div className="relative flex-grow min-h-[1.5rem] font-mono text-xs md:text-sm flex items-center">
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={input ? "" : "How may I assist you?"}
+                    className="absolute inset-0 w-full h-full opacity-0 z-10 font-mono text-xs md:text-sm cursor-text resize-none bg-transparent border-0 ring-0 focus:ring-0 outline-none p-0 text-black"
+                    rows={1}
+                  />
 
-                    <div className="w-full break-all whitespace-pre-wrap text-black pointer-events-none flex flex-wrap items-center">
-                      {!input && (
-                        <span className="text-black/30">How may I assist you?</span>
-                      )}
-                      <span>{input}</span>
-                      <span className="w-2 h-4 bg-black cursor-blink shrink-0 ml-0.5" />
-                    </div>
+                  <div className="w-full break-all whitespace-pre-wrap text-black pointer-events-none flex flex-wrap items-center font-mono font-medium">
+                    {!input && (
+                      <span className="text-gray-400 font-mono">How may I assist you?</span>
+                    )}
+                    <span className="text-black">{input}</span>
+                    <span className="w-2.5 h-4 bg-black cursor-blink shrink-0 ml-1 inline-block" />
                   </div>
                 </div>
-                <button
-                   type="button"
-                   onClick={toggleListening}
-                   className={`relative text-black hover:scale-110 transition-transform p-2 border-2 ${isListening ? 'border-red-500 bg-red-50 animate-pulse ring-4 ring-red-200' : 'border-black bg-white'}`}
-                   title={isListening ? "Stop listening" : "Start voice assistant"}
-                 >
-                   {isListening ? <MicOff size={20} className="text-red-500" /> : <Mic size={20} />}
-                </button>
-                {isLoading ? (
-                  <button
-                    type="button"
-                    onClick={handleStop}
-                    className="flex items-center justify-center gap-2 px-6 py-2 border-2 border-black bg-black text-white font-headline font-bold text-sm uppercase tracking-widest shadow-[4px_4px_0px_#ddd] hover:bg-red-600 transition-all"
-                  >
-                    <StopCircle size={18} />
-                    STOP
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={(!input.trim() && attachedFiles.length === 0)}
-                    className="premium-button flex items-center justify-center gap-2"
-                  >
-                    <Send size={18} />
-                    EXECUTE
-                  </button>
-                )}
               </div>
+
+              {/* Square Mic Button */}
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`w-11 h-11 shrink-0 flex items-center justify-center transition-all shadow-[0_4px_14px_rgba(0,0,0,0.5)] border-2 ${isListening ? 'border-red-500 bg-red-500 text-white animate-pulse' : 'border-black bg-white text-black hover:bg-[#D4AF37] hover:border-[#D4AF37]'}`}
+                title={isListening ? "Stop listening" : "Start voice assistant"}
+              >
+                {isListening ? <MicOff size={20} /> : <Mic size={20} className="stroke-[2.2]" />}
+              </button>
+
+              {/* EXECUTE / STOP Button */}
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={handleStop}
+                  className="h-11 px-6 flex items-center justify-center gap-2 border-2 border-red-500 bg-red-950 text-red-400 font-mono font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_16px_rgba(239,68,68,0.4)] hover:bg-red-900 transition-all shrink-0"
+                >
+                  <StopCircle size={16} />
+                  STOP
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={(!input.trim() && attachedFiles.length === 0)}
+                  className="h-11 px-6 flex items-center justify-center gap-2 border-2 border-[#1F4D32] bg-[#0A1810] hover:bg-[#142A1D] hover:border-[#D4AF37] text-white font-mono font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_16px_rgba(15,42,29,0.7)] transition-all shrink-0 disabled:opacity-50"
+                >
+                  <Send size={15} className="rotate-[-20deg]" />
+                  EXECUTE
+                </button>
+              )}
             </div>
           </form>
         </div>
