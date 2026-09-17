@@ -883,7 +883,7 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <span className="brand-mark shrink-0" />
             <div className="flex flex-col justify-center gap-1.5 min-w-0">
-              <span className="font-headline font-bold text-base leading-snug tracking-tight text-[#050403]">
+              <span className="font-headline font-bold text-base leading-snug tracking-tight text-[#E2ECE5]">
                 Full-Stack GenAI Assistant
               </span>
             </div>
