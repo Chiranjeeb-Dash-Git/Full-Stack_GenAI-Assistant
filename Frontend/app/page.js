@@ -870,7 +870,7 @@ export default function Home() {
       {/* Sidebar */}
       <div
         className={`chat-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:translate-x-0 fixed md:static inset-y-0 left-0 z-50 w-[280px] bg-white border-r-2 border-black shrink-0 flex flex-col p-4 transition-all duration-500 ease-in-out`}
+          } md:translate-x-0 fixed md:static inset-y-0 left-0 z-50 w-[280px] shrink-0 flex flex-col p-4 transition-all duration-500 ease-in-out`}
       >
         <div className="flex items-center gap-2 mb-6 md:hidden">
           <button onClick={() => setSidebarOpen(false)} className="p-2 ml-auto text-gray-400 hover:text-white transition-colors">
@@ -1000,17 +1000,17 @@ export default function Home() {
       <div className="chat-main flex-1 flex flex-col min-w-0 h-full relative z-0">
 
 
-        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md text-black border-b border-black md:px-6">
+        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 backdrop-blur-md text-[#0B1910] md:px-6">
           <div className="flex items-center gap-2">
             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 md:hidden">
               <Menu size={26} />
             </button>
             <div className="hidden md:flex items-center pointer-events-none">
-               <span className="font-headline font-bold text-lg tracking-tight">AI CONSOLE</span>
+               <span className="font-headline font-bold text-lg tracking-tight text-[#0B1910]">AI CONSOLE</span>
             </div>
             <button
               onClick={() => setShowLanding(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors text-[10px] font-bold font-mono uppercase"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold font-mono uppercase transition-all"
               title="Back to home"
             >
               <HomeIcon size={13} /> HOME
