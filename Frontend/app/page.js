@@ -1016,6 +1016,16 @@ export default function Home() {
             >
               <HomeIcon size={13} /> HOME
             </button>
+            {mounted && (
+              <button 
+                onClick={() => setShowAbout(!showAbout)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold font-mono uppercase transition-all border border-[#0F2D1E]/20"
+                title="Project Architecture"
+              >
+                {showAbout ? <X size={12} /> : <Plus size={12} />}
+                PROJECT CORE
+              </button>
+            )}
           </div>
           
           <div className="flex items-center gap-3">
@@ -1142,36 +1152,15 @@ export default function Home() {
 
         <div className="chat-scroll-area flex-1 overflow-y-auto custom-scrollbar">
           {messages.length === 0 ? (
-            <div className="min-h-full flex flex-col items-center pt-8 pb-32 px-4 md:px-8">
-              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath rounded-full p-2">
-                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain" style={{ filter: 'drop-shadow(0 0 14px rgba(15,45,30,0.35))' }} />
+            <div className="min-h-full flex flex-col items-center justify-center pt-6 pb-24 px-4 md:px-8">
+              <div className="relative w-36 h-36 md:w-48 md:h-48 mb-6 flex items-center justify-center animate-robot-intense-glow rounded-full p-3">
+                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain animate-float-slow" />
               </div>
-              <h1 className="text-3xl md:text-5xl font-headline font-extrabold mb-3 tracking-tight text-center text-[#0F2D1E]">
-                Full-Stack GenAI Assistant
-              </h1>
               {mounted && (
                 <div className="flex flex-col items-center w-full max-w-2xl">
-                  {/* Project Analysis Toggle Button */}
-                  <div className="mb-4 relative flex items-center justify-center">
-                    {!showAbout && (
-                      <div className="absolute -left-12 text-2xl animate-tap select-none">
-                        👉
-                      </div>
-                    )}
-                    <div className="animate-float-slow">
-                      <button 
-                        onClick={() => setShowAbout(!showAbout)}
-                        className="px-6 py-2.5 font-headline font-bold text-xs uppercase tracking-widest shadow-xl transition-all flex items-center gap-2 rounded-full"
-                      >
-                        {showAbout ? <X size={14} /> : <Plus size={14} />}
-                        PROJECT CORE
-                      </button>
-                    </div>
-                  </div>
-
                   {/* Conditional About Me Section */}
                   {showAbout && (
-                    <div className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-500">
+                    <div className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-500 mb-8">
                       <div className="p-6 border border-[#332A18] bg-[#151209] rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] relative text-[var(--chat-cream)]">
                         <div className="absolute -top-3 left-4 bg-gradient-to-r from-[#9C7A1C] to-[#C9A227] text-[#050403] px-3 py-0.5 font-headline font-bold text-[10px] uppercase tracking-widest rounded-md shadow-md">
                           SYSTEM ARCHITECTURE & CORE
