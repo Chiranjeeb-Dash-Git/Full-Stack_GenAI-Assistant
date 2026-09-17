@@ -817,6 +817,8 @@ export default function Home() {
     setSessionTimestamp(new Date().toLocaleTimeString());
   }, []);
 
+  const welcomeSpokenRef = useRef(false);
+
   useEffect(() => {
     // layout.js intentionally locks the chat viewport; release that lock for
     // the long-form landing page so the document itself can scroll.
@@ -825,7 +827,20 @@ export default function Home() {
     document.body.style.height = showLanding ? "auto" : "100vh";
     document.body.style.minHeight = showLanding ? "100vh" : "";
     document.body.style.overflow = showLanding ? "visible" : "hidden";
-    if (showLanding) window.scrollTo({ top: 0, behavior: "instant" });
+    if (showLanding) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    } else if (!welcomeSpokenRef.current && typeof window !== "undefined" && "speechSynthesis" in window) {
+      welcomeSpokenRef.current = true;
+      try {
+        const welcomeText = "Welcome to Full-Stack Gen AI Assistant. How may I assist you today?";
+        const utterance = new SpeechSynthesisUtterance(welcomeText);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } catch (e) {
+        console.error("Welcome speech error:", e);
+      }
+    }
     return () => {
       document.documentElement.style.height = "";
       document.documentElement.style.overflow = "";
