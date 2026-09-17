@@ -133,6 +133,42 @@ function LandingPage({ onLaunch }) {
   );
 }
 
+function EmbersField() {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const spawnEmber = () => {
+      if (!container) return;
+      const e = document.createElement("div");
+      e.className = "ember";
+      const size = 2 + Math.random() * 4;
+      e.style.width = size + "px";
+      e.style.height = size + "px";
+      e.style.left = Math.random() * 100 + "%";
+      e.style.setProperty("--drift", (Math.random() * 80 - 40) + "px");
+      const duration = 8 + Math.random() * 10;
+      e.style.animationDuration = duration + "s";
+      e.style.animationDelay = (Math.random() * 4) + "s";
+      container.appendChild(e);
+      setTimeout(() => {
+        if (e.parentNode === container) e.remove();
+      }, (duration + 4) * 1000);
+    };
+
+    for (let i = 0; i < 22; i++) spawnEmber();
+    const interval = setInterval(spawnEmber, 900);
+    return () => {
+      clearInterval(interval);
+      if (container) container.innerHTML = "";
+    };
+  }, []);
+
+  return <div className="embers" ref={containerRef} aria-hidden="true" />;
+}
+
 export default function Home() {
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
@@ -169,6 +205,17 @@ export default function Home() {
     progress: 0,
   });
   const [microphoneError, setMicrophoneError] = useState("");
+  const [isComposerFocused, setIsComposerFocused] = useState(false);
+  const [sendRipples, setSendRipples] = useState([]);
+  const [activeLang, setActiveLang] = useState("EN");
+
+  const handleSendRipple = () => {
+    const id = Date.now();
+    setSendRipples(prev => [...prev, { id }]);
+    setTimeout(() => {
+      setSendRipples(prev => prev.filter(r => r.id !== id));
+    }, 500);
+  };
   
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editingMessageContent, setEditingMessageContent] = useState("");
@@ -838,12 +885,8 @@ export default function Home() {
   if (showLanding) return <LandingPage onLaunch={() => setShowLanding(false)} />;
 
   return (
-    <div className="chat-console-shell flex h-screen w-full bg-white text-black font-body overflow-hidden relative">
-      <div className="chat-ambient-field" aria-hidden="true">
-        <div className="chat-ambient-orb chat-ambient-orb-one" />
-        <div className="chat-ambient-orb chat-ambient-orb-two" />
-      </div>
-      {/* SKETCH OVERLAY IS NOW HANDLED IN GLOBALS.CSS */}
+    <div className="chat-console-shell flex h-screen w-full bg-[var(--paper)] text-[var(--cream)] font-body overflow-hidden relative">
+      <EmbersField />
 
       {sidebarOpen && (
         <div
@@ -866,7 +909,7 @@ export default function Home() {
         {/* Mockup Header in Sidebar */}
         <div className="flex flex-col gap-1 mb-8">
           <div className="flex items-center gap-4">
-            <img src="/robot-icon.png" alt="Logo" className={`w-[60px] h-[60px] shrink-0 ${isDarkMode ? "invert" : ""}`} />
+            <span className="brand-mark shrink-0" />
             <div className="flex flex-col justify-center gap-1.5 min-w-0">
               <span className="font-headline font-bold text-lg leading-none text-black tracking-tight">Full-Stack GenAI Assistant</span>
             </div>
@@ -875,7 +918,7 @@ export default function Home() {
 
         <button
           onClick={createNewChat}
-          className="premium-button flex items-center justify-center gap-3 w-full mb-6 font-label uppercase"
+          className="new-chat-sheen w-full mb-6"
         >
           <Plus size={18} />
           New Discussion
@@ -883,7 +926,7 @@ export default function Home() {
 
         <div className="chat-search flex items-center gap-2 mt-4 px-3 py-2 border border-black/10 bg-[#F3F1E9] rounded-xl text-black/50">
           <Search size={14} />
-          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations" className="!border-0 !p-0 !bg-transparent text-xs w-full" />
+          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations..." className="!border-0 !p-0 !bg-transparent text-xs w-full" />
         </div>
         <div className="flex-1 overflow-y-auto mt-2 px-1 custom-scrollbar space-y-2">
           <div className="text-[10px] text-black font-mono font-bold uppercase tracking-[0.2em] mb-4 px-2">MEMORY_BANK</div>
@@ -988,8 +1031,10 @@ export default function Home() {
             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 md:hidden">
               <Menu size={26} />
             </button>
-            <div className="hidden md:flex items-center pointer-events-none">
-               <span className="font-headline font-bold text-lg tracking-tight">AI CONSOLE</span>
+            <div className="hidden md:flex items-center">
+              <div className="model-badge-shimmer flex items-center gap-2 text-xs text-[var(--taupe)]">
+                <span className="brand-mark shrink-0" /> <b>LLaMA 3.3 · 70B</b>&nbsp;via Groq LPU
+              </div>
             </div>
             <button
               onClick={() => setShowLanding(true)}
@@ -1027,14 +1072,14 @@ export default function Home() {
                 </>
               )}
             </button>
-            <button
+            <div
               onClick={() => setVoiceMode(prev => !prev)}
-              className={`chat-voice-switch flex items-center gap-2 px-3 py-1.5 border-2 border-black transition-colors text-xs font-bold font-mono tracking-tighter ${voiceMode ? "on bg-black text-white shadow-[2px_2px_0px_#888]" : "bg-white hover:bg-black/5 shadow-[2px_2px_0px_#ccc]"}`}
-              title="Automatically speak assistant replies"
+              className={`voice-switch-luxury ${voiceMode ? "on" : ""}`}
+              title="Toggle Voice Mode"
             >
-              <Mic size={14} />
-              <span className="hidden sm:inline">VOICE MODE {voiceMode ? "ON" : "OFF"}</span>
-            </button>
+              <div className="switch-track"><div className="knob" /></div>
+              <span>Voice mode</span>
+            </div>
             <div className="relative">
               <button
                 onClick={() => setIsVoiceSettingsOpen(prev => !prev)}
@@ -1437,7 +1482,7 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={(!input.trim() && attachedFiles.length === 0)}
-                    className="premium-button flex items-center justify-center gap-2"
+                    className="send-btn-luxury"
                   >
                     <Send size={18} />
                     EXECUTE

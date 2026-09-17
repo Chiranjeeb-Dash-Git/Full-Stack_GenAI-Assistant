@@ -8,26 +8,42 @@
 
 @layer base {
   :root {
-    --primary: 0 0 0;
-    --surface: 255 255 255;
-    --background: 255 255 255;
-    --on-surface: 0 0 0;
-    --bg-color: 255 255 255;
-    --text-color: 0 0 0;
+    --void: #050403;
+    --paper: #0B0A08;
+    --panel: #151209;
+    --panel-2: #1D190F;
+    --line: #332A18;
+    --cream: #F3E9D2;
+    --taupe: #B9A97E;
+    --gold: #C9A227;
+    --gold-light: #E8CD7A;
+    --gold-pale: #F0DFA0;
+    --gold-deep: #9C7A1C;
+    --primary: 201 162 39;
+    --surface: 21 18 9;
+    --background: 11 10 8;
+    --on-surface: 243 233 210;
+    --bg-color: 11 10 8;
+    --text-color: 243 233 210;
   }
 
   .dark {
-    --bg-color: 15 15 15;
-    --text-color: 235 235 235;
+    --bg-color: 5 4 3;
+    --text-color: 243 233 210;
   }
 
   body {
-    background-color: rgb(var(--bg-color));
-    color: rgb(var(--text-color));
-    font-family: 'Architects Daughter', cursive;
+    background-color: var(--paper);
+    color: var(--cream);
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     position: relative;
-    background-image: none; /* Removed hatching to match "white screen" request */
+  }
+
+  ::selection {
+    background: var(--gold);
+    color: var(--void);
   }
 }
 
@@ -452,3 +468,442 @@
   .chat-console-shell .chat-canvas-glow-two { animation: chat-canvas-float-two 17s ease-in-out infinite !important; }
   .chat-console-shell .chat-canvas-beam { animation: chat-canvas-beam-sweep 11s ease-in-out infinite !important; }
 }
+
+/* ================= BLACK & GOLD LUXURY CONSOLE THEME ================= */
+.embers {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ember {
+  position: absolute;
+  bottom: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-pale), var(--gold) 60%, transparent 75%);
+  box-shadow: 0 0 10px rgba(201,162,39,.6);
+  animation-name: rise;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+@keyframes rise {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  10% { opacity: 0.75; }
+  85% { opacity: 0.4; }
+  100% { transform: translate(var(--drift, 20px), -110vh) scale(1.1); opacity: 0; }
+}
+
+/* Brand mark halo */
+.brand-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  position: relative;
+  display: inline-block;
+}
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  animation: halo 2.4s ease-out infinite;
+}
+@keyframes halo {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+
+/* New chat sheen button */
+.new-chat-sheen {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid var(--gold-deep) !important;
+  cursor: pointer;
+  background: var(--panel-2) !important;
+  color: var(--gold-pale) !important;
+  font-weight: 700;
+  font-size: 13.5px;
+  transition: border-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+.new-chat-sheen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(232,205,122,0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+.new-chat-sheen:hover::before { left: 130%; }
+.new-chat-sheen:hover { border-color: var(--gold) !important; color: var(--cream) !important; }
+.new-chat-sheen:active { transform: scale(0.98); }
+
+/* Model Badge Shimmer */
+.model-badge-shimmer b {
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--taupe) 0%, var(--gold-pale) 25%, var(--gold) 50%, var(--gold-pale) 75%, var(--taupe) 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmerText 5s linear infinite;
+}
+@keyframes shimmerText {
+  to { background-position: -220% center; }
+}
+
+/* Voice switch pill */
+.voice-switch-luxury {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--taupe);
+  cursor: pointer;
+  padding: 7px 12px 7px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  transition: border-color 0.25s ease, background 0.25s ease;
+}
+.voice-switch-luxury:hover {
+  border-color: var(--gold-deep);
+}
+.voice-switch-luxury .switch-track {
+  width: 34px;
+  height: 19px;
+  border-radius: 999px;
+  background: var(--line);
+  position: relative;
+  transition: background 0.3s ease;
+}
+.voice-switch-luxury .switch-track .knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--cream);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.voice-switch-luxury.on {
+  border-color: var(--gold);
+  background: var(--panel-2);
+}
+.voice-switch-luxury.on .switch-track {
+  background: var(--gold);
+}
+.voice-switch-luxury.on .switch-track .knob {
+  transform: translateX(15px);
+  background: var(--void);
+}
+
+/* Message entrances: Cinematic clip-path wipe */
+.msg-wipe-in {
+  clip-path: inset(0 0 0 0);
+  animation: wipeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.msg-wipe-in-right {
+  clip-path: inset(0 0 0 0);
+  animation: wipeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes wipeIn {
+  from { clip-path: inset(0 100% 0 0); opacity: 0; transform: translateX(-8px); }
+  to { clip-path: inset(0 0 0 0); opacity: 1; transform: translateX(0); }
+}
+@keyframes wipeInRight {
+  from { clip-path: inset(0 0 0 100%); opacity: 0; transform: translateX(8px); }
+  to { clip-path: inset(0 0 0 0); opacity: 1; transform: translateX(0); }
+}
+
+/* Avatar: rotating conic halo */
+.avatar-orb-luxury {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-orb-luxury::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--gold), transparent 30%, transparent 70%, var(--gold));
+  animation: spinHalo 5s linear infinite;
+}
+.avatar-orb-luxury::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--void);
+}
+.avatar-orb-luxury span {
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
+  color: var(--gold-pale);
+}
+@keyframes spinHalo {
+  to { transform: rotate(360deg); }
+}
+
+.avatar-user-luxury {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(140deg, var(--gold-light), var(--gold-deep));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--void);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Cursor blink */
+.cursor-blink-luxury {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  background: var(--gold);
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: blinkLuxury 1s step-end infinite;
+}
+@keyframes blinkLuxury { 50% { opacity: 0; } }
+
+/* Shimmer bar typing indicator */
+.typing-row-luxury {
+  display: flex;
+  gap: 14px;
+  opacity: 0;
+  animation: msgIn 0.4s ease forwards;
+}
+.typing-bubble-luxury {
+  padding: 16px 20px;
+  border-radius: 18px;
+  border-top-left-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  width: 130px;
+}
+.shimmer-bar-luxury {
+  height: 8px;
+  border-radius: 4px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--line) 25%, var(--gold-deep) 50%, var(--line) 75%);
+  background-size: 200% auto;
+  animation: stripeMove 1.3s linear infinite;
+}
+@keyframes stripeMove {
+  to { background-position: -200% center; }
+}
+
+/* Input wrap rotating conic gradient focus */
+.input-shell-wrap-luxury {
+  position: relative;
+  border-radius: 23px;
+  padding: 1px;
+  background: var(--line);
+  transition: background 0.3s ease;
+  overflow: hidden;
+}
+.input-shell-wrap-luxury.focused::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 0deg, var(--gold-deep), var(--gold-pale), var(--gold-deep), var(--panel), var(--gold-deep));
+  animation: rotateBorder 3s linear infinite;
+  z-index: 0;
+}
+.input-shell-wrap-luxury .input-shell-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: var(--panel);
+  border-radius: 22px;
+  padding: 10px 10px 10px 16px;
+}
+@keyframes rotateBorder {
+  to { transform: rotate(360deg); }
+}
+
+/* Mic button sonar recording */
+.mic-btn-luxury {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  background: var(--panel-2);
+  color: var(--taupe);
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.mic-btn-luxury:hover {
+  background: var(--line);
+  transform: scale(1.06);
+  color: var(--gold-pale);
+}
+.mic-btn-luxury.recording {
+  background: var(--gold) !important;
+  color: var(--void) !important;
+}
+.mic-btn-luxury .sonar {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.mic-btn-luxury.recording .sonar::before,
+.mic-btn-luxury.recording .sonar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  animation: sonar 1.8s ease-out infinite;
+}
+.mic-btn-luxury.recording .sonar::after { animation-delay: 0.6s; }
+@keyframes sonar {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* Send button ripple */
+.send-btn-luxury {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
+  color: var(--void) !important;
+  box-shadow: 0 10px 22px -12px rgba(201,162,39,0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.send-btn-luxury:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 14px 28px -12px rgba(201,162,39,0.6);
+}
+.send-btn-luxury:active { transform: translateY(0) scale(0.96); }
+.send-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(5,4,3,0.4);
+  transform: scale(0);
+  pointer-events: none;
+  animation: sendRipple 0.5s ease-out forwards;
+}
+@keyframes sendRipple { to { transform: scale(3); opacity: 0; } }
+
+/* Voice Control Row with striped seek fill */
+.voice-ctrl-luxury {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  width: fit-content;
+  max-width: 100%;
+}
+.play-btn-luxury {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  background: var(--gold);
+  color: var(--void);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: transform 0.2s ease;
+}
+.play-btn-luxury:hover { transform: scale(1.1); }
+.play-btn-luxury .ripple {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  opacity: 0;
+  pointer-events: none;
+}
+.play-btn-luxury .ripple.go { animation: rippleOut 0.6s ease-out; }
+@keyframes rippleOut {
+  from { transform: scale(0.5); opacity: 0.8; }
+  to { transform: scale(1.6); opacity: 0; }
+}
+
+.seek-luxury {
+  position: relative;
+  width: 120px;
+  height: 4px;
+  background: var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.seek-luxury .fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-pale), var(--gold-deep));
+  background-size: 200% auto;
+  transition: width 0.1s linear;
+}
+.seek-luxury .fill.playing { animation: stripeMove 1.4s linear infinite; }
+.voice-ctrl-luxury .time {
+  font-size: 11px;
+  color: var(--taupe);
+  font-variant-numeric: tabular-nums;
+}
+.lang-chip-luxury {
+  font-size: 10.5px;
+  color: var(--taupe);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
