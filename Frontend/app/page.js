@@ -954,30 +954,30 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="p-4 mt-auto border-t border-[#332A18] bg-[#0B0A08] relative">
+        <div className="p-4 mt-auto relative">
           <div
             onClick={() => user ? null : setIsAuthVisible(true)}
-            className="flex items-center gap-3 w-full cursor-pointer hover:bg-[#151209] p-3 transition-colors group border border-[#332A18] rounded-xl"
+            className="flex items-center gap-3 w-full cursor-pointer hover:bg-white/10 p-3 transition-all group rounded-xl"
           >
-            <div className="w-10 h-10 bg-[#1D190F] border border-[#9C7A1C] text-[var(--chat-gold-pale)] flex items-center justify-center shrink-0 rounded-lg shadow-[2px_2px_0px_#332A18] group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 bg-white/20 text-white flex items-center justify-center shrink-0 rounded-lg group-hover:scale-105 transition-transform">
               {user ? (
                 <span className="font-headline font-bold text-lg">{user.name[0]}</span>
               ) : (
-                <Bot size={22} className="text-[var(--chat-gold)]" />
+                <Bot size={22} className="text-emerald-400" />
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-headline font-bold truncate text-[var(--chat-cream)] uppercase leading-tight">
+              <span className="text-[13px] font-headline font-bold truncate text-white uppercase leading-tight">
                 {user ? user.name : "LOGIN / SIGNUP"}
               </span>
-              <span className="text-[10px] text-[var(--chat-taupe)] font-label uppercase tracking-tighter">
+              <span className="text-[10px] text-emerald-300 font-label uppercase tracking-tighter">
                 {user ? "Identity_Confirmed" : "No active session"}
               </span>
             </div>
             {user && (
               <button
                 onClick={(e) => { e.stopPropagation(); setUser(null); }}
-                className="ml-auto p-1.5 hover:bg-black/20 text-[var(--chat-taupe)] hover:text-red-400 transition-all"
+                className="ml-auto p-1.5 hover:bg-black/20 text-emerald-200 hover:text-red-400 transition-all"
                 title="Logout"
               >
                 <span className="material-symbols-outlined scale-75">logout</span>
@@ -1000,17 +1000,17 @@ export default function Home() {
       <div className="chat-main flex-1 flex flex-col min-w-0 h-full relative z-0">
 
 
-        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 backdrop-blur-md text-[#0B1910] md:px-6">
+        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 text-white md:px-6">
           <div className="flex items-center gap-2">
             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 md:hidden">
               <Menu size={26} />
             </button>
             <div className="hidden md:flex items-center pointer-events-none">
-               <span className="font-headline font-bold text-lg tracking-tight text-[#0B1910]">AI CONSOLE</span>
+               <span className="font-headline font-bold text-lg tracking-tight text-white">AI CONSOLE</span>
             </div>
             <button
               onClick={() => setShowLanding(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold font-mono uppercase transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold font-mono uppercase transition-all bg-white/10 hover:bg-white/20 text-white"
               title="Back to home"
             >
               <HomeIcon size={13} /> HOME
@@ -1021,7 +1021,7 @@ export default function Home() {
             {messages.length > 0 && (
               <button
                 onClick={handleClearChat}
-                className="p-1 border-2 border-black bg-white hover:bg-black/5 transition-colors shadow-[2px_2px_0px_#888] text-red-600 hover:bg-red-50"
+                className="p-2 rounded-full bg-white/10 hover:bg-red-500/80 transition-colors text-white"
                 title="Clear Chat"
               >
                 <Trash2 size={14} />
@@ -1029,7 +1029,7 @@ export default function Home() {
             )}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-black/5 transition-colors shadow-[2px_2px_0px_#ccc] text-xs font-bold font-mono tracking-tighter"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold font-mono tracking-tighter text-white"
               title="Toggle Theme"
             >
               {isDarkMode ? (
@@ -1046,7 +1046,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setVoiceMode(prev => !prev)}
-              className={`chat-voice-switch flex items-center gap-2 px-3 py-1.5 border-2 border-black transition-colors text-xs font-bold font-mono tracking-tighter ${voiceMode ? "on bg-black text-white shadow-[2px_2px_0px_#888]" : "bg-white hover:bg-black/5 shadow-[2px_2px_0px_#ccc]"}`}
+              className={`chat-voice-switch flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold font-mono tracking-tighter ${voiceMode ? "bg-emerald-500 text-white shadow-lg" : "bg-white/10 hover:bg-white/20 text-white"}`}
               title="Automatically speak assistant replies"
             >
               <Mic size={14} />
@@ -1055,15 +1055,15 @@ export default function Home() {
             <div className="relative">
               <button
                 onClick={() => setIsVoiceSettingsOpen(prev => !prev)}
-                className="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-black/5 transition-colors shadow-[2px_2px_0px_#ccc] text-xs font-bold font-mono tracking-tighter"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold font-mono tracking-tighter text-white"
                 title="Voice settings"
               >
                 <Settings size={14} />
                 <span className="hidden sm:inline">VOICE</span>
               </button>
               {isVoiceSettingsOpen && (
-                <div className="absolute right-0 top-full mt-2 w-64 p-4 bg-white border-2 border-black shadow-[4px_4px_0px_#ccc] z-50 text-black">
-                  <div className="flex items-center gap-2 mb-3 font-mono text-[10px] font-bold uppercase tracking-widest">
+                <div className="absolute right-0 top-full mt-2 w-64 p-4 bg-emerald-950/90 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-2xl z-50 text-white">
+                  <div className="flex items-center gap-2 mb-3 font-mono text-[10px] font-bold uppercase tracking-widest text-emerald-400">
                     <SlidersHorizontal size={13} /> Speech Controls
                   </div>
                   <label className="block mb-3 text-[10px] font-mono font-bold uppercase">
@@ -1071,7 +1071,7 @@ export default function Home() {
                     <select
                       value={voiceSettings.gender}
                       onChange={e => setVoiceSettings(prev => ({ ...prev, gender: e.target.value }))}
-                      className="w-full mt-1 border-2 border-black bg-white p-2 text-xs font-mono"
+                      className="w-full mt-1 border border-emerald-500/30 bg-black/40 p-2 text-xs font-mono rounded-lg text-white"
                     >
                       <option value="female">Female</option>
                       <option value="male">Male</option>
@@ -1082,7 +1082,7 @@ export default function Home() {
                     <select
                       value={voiceSettings.language}
                       onChange={e => setVoiceSettings(prev => ({ ...prev, language: e.target.value }))}
-                      className="w-full mt-1 border-2 border-black bg-white p-2 text-xs font-mono"
+                      className="w-full mt-1 border border-emerald-500/30 bg-black/40 p-2 text-xs font-mono rounded-lg text-white"
                     >
                       <option value="auto">Auto detect</option>
                       <option value="en">English</option>
@@ -1105,14 +1105,14 @@ export default function Home() {
                       className="w-full mt-1 !p-0 !border-0"
                     />
                   </label>
-                  {!voicesReady && <p className="mt-3 text-[10px] text-red-600 font-mono">Loading browser voices...</p>}
+                  {!voicesReady && <p className="mt-3 text-[10px] text-red-400 font-mono">Loading browser voices...</p>}
                 </div>
               )}
             </div>
             <div className="relative">
               <button 
                 onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 border-2 border-black bg-white hover:bg-black/5 transition-colors shadow-[2px_2px_0px_#ccc] text-xs font-bold font-mono tracking-tighter"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold font-mono tracking-tighter text-white"
             >
               <Bot size={14} />
               {selectedModel === "qwen/qwen3.8-27b" ? "Qwen 3.8 Multimodal" : selectedModel}
@@ -1120,16 +1120,16 @@ export default function Home() {
             </button>
             
             {isModelDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border-2 border-black shadow-[4px_4px_0px_#ccc] flex flex-col z-50">
+              <div className="absolute right-0 top-full mt-2 w-48 bg-emerald-950/90 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden">
                 <button 
                   onClick={() => { setSelectedModel("qwen/qwen3.8-27b"); setIsModelDropdownOpen(false); }}
-                  className={`text-left px-4 py-2 font-mono text-[10px] uppercase font-bold hover:bg-black/5 ${selectedModel === "qwen/qwen3.8-27b" ? "text-primary border-r-4 border-black font-black bg-black/5" : "text-black"}`}
+                  className={`text-left px-4 py-2.5 font-mono text-[10px] uppercase font-bold hover:bg-white/10 transition-colors ${selectedModel === "qwen/qwen3.8-27b" ? "text-emerald-400 font-black bg-white/10" : "text-white"}`}
                 >
                   Qwen 3.8 Multimodal
                 </button>
                 <button 
                   onClick={() => { setSelectedModel("openai/gpt-oss-120b"); setIsModelDropdownOpen(false); }}
-                  className={`text-left px-4 py-2 font-mono text-[10px] uppercase font-bold hover:bg-black/5 ${selectedModel === "openai/gpt-oss-120b" ? "text-primary border-r-4 border-black font-black bg-black/5" : "text-black"}`}
+                  className={`text-left px-4 py-2.5 font-mono text-[10px] uppercase font-bold hover:bg-white/10 transition-colors ${selectedModel === "openai/gpt-oss-120b" ? "text-emerald-400 font-black bg-white/10" : "text-white"}`}
                 >
                   GPT OSS 120B
                 </button>
@@ -1140,18 +1140,12 @@ export default function Home() {
         </div>
 
         <div className="chat-scroll-area flex-1 overflow-y-auto custom-scrollbar">
-          <div className="chat-canvas-visual" aria-hidden="true">
-            <div className="chat-canvas-grid" />
-            <div className="chat-canvas-glow chat-canvas-glow-one" />
-            <div className="chat-canvas-glow chat-canvas-glow-two" />
-            <div className="chat-canvas-beam" />
-          </div>
           {messages.length === 0 ? (
-            <div className="min-h-full flex flex-col items-center pt-4 pb-32 px-4 md:px-8">
-              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath bg-[#151209] rounded-full p-2 border-2 border-[#C9A227] shadow-[0_0_30px_rgba(201,162,39,0.3)]">
-                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain" style={{ filter: 'brightness(0) saturate(100%) invert(76%) sepia(37%) saturate(737%) hue-rotate(8deg) brightness(95%) contrast(89%)' }} />
+            <div className="min-h-full flex flex-col items-center pt-8 pb-32 px-4 md:px-8">
+              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath bg-white/10 backdrop-blur-xl rounded-full p-2 border border-emerald-400/40 shadow-[0_0_40px_rgba(52,211,153,0.3)]">
+                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain" style={{ filter: 'drop-shadow(0 0 10px rgba(52,211,153,0.8))' }} />
               </div>
-              <h1 className="text-3xl md:text-4xl font-headline font-bold mb-3 tracking-tighter text-center shimmer-text">
+              <h1 className="text-3xl md:text-5xl font-headline font-extrabold mb-3 tracking-tight text-center text-emerald-300 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
                 Full-Stack GenAI Assistant
               </h1>
               {mounted && (
@@ -1166,7 +1160,7 @@ export default function Home() {
                     <div className="animate-float-slow">
                       <button 
                         onClick={() => setShowAbout(!showAbout)}
-                        className="px-6 py-2.5 border border-[#9C7A1C] bg-[#1D190F] text-[var(--chat-gold-pale)] font-headline font-bold text-xs uppercase tracking-widest shadow-[0_10px_25px_-10px_rgba(201,162,39,0.4)] hover:border-[var(--chat-gold)] hover:text-[var(--chat-cream)] transition-all flex items-center gap-2 rounded-xl"
+                        className="px-6 py-2.5 border border-emerald-400/40 bg-white/10 backdrop-blur-md text-emerald-200 font-headline font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-white/20 transition-all flex items-center gap-2 rounded-full"
                       >
                         {showAbout ? <X size={14} /> : <Plus size={14} />}
                         PROJECT CORE
