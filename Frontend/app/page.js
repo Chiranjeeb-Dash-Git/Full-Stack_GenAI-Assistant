@@ -898,34 +898,35 @@ export default function Home() {
           New Discussion
         </button>
 
-        <div className="chat-search flex items-center gap-2 mt-4 px-3 py-2 border border-[#332A18] bg-[#151209] rounded-xl text-[var(--chat-taupe)]">
+        <div className="chat-search flex items-center gap-2 mt-4 px-3 py-2 rounded-xl">
           <Search size={14} />
-          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations..." className="!border-0 !p-0 !bg-transparent text-xs w-full text-[var(--chat-cream)]" />
+          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations..." className="!border-0 !p-0 !bg-transparent text-xs w-full" />
         </div>
         <div className="flex-1 overflow-y-auto mt-2 px-1 custom-scrollbar space-y-2">
-          <div className="text-[10px] text-[var(--chat-taupe)] font-mono font-bold uppercase tracking-[0.2em] mb-4 px-2">MEMORY_BANK</div>
+          <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] mb-4 px-2 opacity-50">MEMORY_BANK</div>
           {chats.filter(chat => !chatSearch.trim() || (chat.title || chat.messages?.[0]?.content || "").toLowerCase().includes(chatSearch.toLowerCase())).map((chat) => (
             <div key={chat.id} className="relative group">
               {editingChatId === chat.id ? (
-                <div className="flex items-center gap-2 p-2 w-full border border-[#332A18] bg-[#151209]">
-                  <span className="material-symbols-outlined scale-75 text-[var(--chat-gold)]">edit</span>
+                <div className="flex items-center gap-2 p-2 w-full">
+                  <span className="material-symbols-outlined scale-75">edit</span>
                   <input
                     autoFocus
                     value={editChatTitle}
                     onChange={(e) => setEditChatTitle(e.target.value)}
                     onBlur={() => saveChatTitle(chat.id, editChatTitle || "Session")}
                     onKeyDown={(e) => e.key === "Enter" && saveChatTitle(chat.id, editChatTitle || "Session")}
-                    className="flex-1 min-w-0 bg-transparent outline-none text-[12px] font-mono text-[var(--chat-cream)] font-medium uppercase"
+                    className="flex-1 min-w-0 bg-transparent outline-none text-[12px] font-mono font-medium uppercase"
                   />
                 </div>
               ) : (
                 <>
                   <button
                     onClick={() => selectChat(chat)}
-                    className={`flex items-center gap-3 p-3 w-full transition-all text-[12px] font-mono text-left truncate border rounded-xl ${currentChatId === chat.id
-                      ? "bg-[#1D190F] border-[#9C7A1C] text-[var(--chat-gold-pale)]"
-                      : "border-transparent text-[var(--chat-taupe)] hover:bg-[#151209] hover:text-[var(--chat-cream)]"
-                      }`}
+                    className={`flex items-center gap-3 p-3 w-full transition-all text-[12px] font-mono text-left truncate rounded-xl ${
+                      currentChatId === chat.id
+                        ? "border-transparent"
+                        : "border-transparent"
+                    }`}
                   >
                     <span className="material-symbols-outlined scale-75" style={{ fontVariationSettings: currentChatId === chat.id ? "'FILL' 1" : "'FILL' 0" }}>
                       {currentChatId === chat.id ? "terminal" : "chat_bubble"}
@@ -934,16 +935,16 @@ export default function Home() {
                       {chat.title && chat.title !== "New Session" ? chat.title : (chat.messages.length > 0 ? chat.messages[0].content : "Empty_Session")}
                     </span>
                   </button>
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover:opacity-100 transition-all gap-1 bg-[#151209] p-1 rounded-md">
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover:opacity-100 transition-all gap-1 p-1 rounded-md">
                     <button
                       onClick={(e) => { e.stopPropagation(); setEditingChatId(chat.id); setEditChatTitle(chat.title && chat.title !== "New Session" ? chat.title : ""); }}
-                      className="p-1 text-[var(--chat-taupe)] hover:text-[var(--chat-gold)]"
+                      className="p-1"
                     >
                       <Edit2 size={12} />
                     </button>
                     <button
                       onClick={(e) => deleteChat(e, chat.id)}
-                      className="p-1 text-[var(--chat-taupe)] hover:text-red-400 z-10"
+                      className="p-1 z-10"
                     >
                       <span className="material-symbols-outlined scale-75">close</span>
                     </button>
@@ -957,27 +958,27 @@ export default function Home() {
         <div className="p-4 mt-auto relative">
           <div
             onClick={() => user ? null : setIsAuthVisible(true)}
-            className="flex items-center gap-3 w-full cursor-pointer hover:bg-white/10 p-3 transition-all group rounded-xl"
+            className="flex items-center gap-3 w-full cursor-pointer p-3 transition-all group rounded-xl hover:bg-[#E4F0E8]"
           >
-            <div className="w-10 h-10 bg-white/20 text-white flex items-center justify-center shrink-0 rounded-lg group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 flex items-center justify-center shrink-0 rounded-full bg-[#0F2D1E] text-[#F4EEDD] group-hover:scale-105 transition-transform">
               {user ? (
                 <span className="font-headline font-bold text-lg">{user.name[0]}</span>
               ) : (
-                <Bot size={22} className="text-emerald-400" />
+                <Bot size={22} />
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[13px] font-headline font-bold truncate text-white uppercase leading-tight">
+              <span className="text-[13px] font-headline font-bold truncate text-[#0F2D1E] uppercase leading-tight">
                 {user ? user.name : "LOGIN / SIGNUP"}
               </span>
-              <span className="text-[10px] text-emerald-300 font-label uppercase tracking-tighter">
+              <span className="text-[10px] text-[#4E7560] font-label uppercase tracking-tighter">
                 {user ? "Identity_Confirmed" : "No active session"}
               </span>
             </div>
             {user && (
               <button
                 onClick={(e) => { e.stopPropagation(); setUser(null); }}
-                className="ml-auto p-1.5 hover:bg-black/20 text-emerald-200 hover:text-red-400 transition-all"
+                className="ml-auto p-1.5 text-[#4E7560] hover:text-red-500 transition-all"
                 title="Logout"
               >
                 <span className="material-symbols-outlined scale-75">logout</span>
@@ -1000,17 +1001,17 @@ export default function Home() {
       <div className="chat-main flex-1 flex flex-col min-w-0 h-full relative z-0">
 
 
-        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 text-white md:px-6">
+        <div className="chat-topbar sticky top-0 z-30 flex items-center justify-between p-4 md:px-6">
           <div className="flex items-center gap-2">
             <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 md:hidden">
               <Menu size={26} />
             </button>
             <div className="hidden md:flex items-center pointer-events-none">
-               <span className="font-headline font-bold text-lg tracking-tight text-white">AI CONSOLE</span>
+               <span className="font-headline font-bold text-lg tracking-tight text-[#0F2D1E]">AI CONSOLE</span>
             </div>
             <button
               onClick={() => setShowLanding(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold font-mono uppercase transition-all bg-white/10 hover:bg-white/20 text-white"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold font-mono uppercase transition-all"
               title="Back to home"
             >
               <HomeIcon size={13} /> HOME
@@ -1021,7 +1022,7 @@ export default function Home() {
             {messages.length > 0 && (
               <button
                 onClick={handleClearChat}
-                className="p-2 rounded-full bg-white/10 hover:bg-red-500/80 transition-colors text-white"
+                className="p-2 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"
                 title="Clear Chat"
               >
                 <Trash2 size={14} />
@@ -1029,7 +1030,7 @@ export default function Home() {
             )}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold font-mono tracking-tighter text-white"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold font-mono tracking-tighter"
               title="Toggle Theme"
             >
               {isDarkMode ? (
@@ -1046,7 +1047,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setVoiceMode(prev => !prev)}
-              className={`chat-voice-switch flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold font-mono tracking-tighter ${voiceMode ? "bg-emerald-500 text-white shadow-lg" : "bg-white/10 hover:bg-white/20 text-white"}`}
+              className={`chat-voice-switch flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold font-mono tracking-tighter ${voiceMode ? "bg-emerald-500 text-white shadow-lg" : ""}`}
               title="Automatically speak assistant replies"
             >
               <Mic size={14} />
@@ -1055,7 +1056,7 @@ export default function Home() {
             <div className="relative">
               <button
                 onClick={() => setIsVoiceSettingsOpen(prev => !prev)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold font-mono tracking-tighter text-white"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold font-mono tracking-tighter"
                 title="Voice settings"
               >
                 <Settings size={14} />
@@ -1112,7 +1113,7 @@ export default function Home() {
             <div className="relative">
               <button 
                 onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold font-mono tracking-tighter text-white"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-xs font-bold font-mono tracking-tighter"
             >
               <Bot size={14} />
               {selectedModel === "qwen/qwen3.8-27b" ? "Qwen 3.8 Multimodal" : selectedModel}
@@ -1142,10 +1143,10 @@ export default function Home() {
         <div className="chat-scroll-area flex-1 overflow-y-auto custom-scrollbar">
           {messages.length === 0 ? (
             <div className="min-h-full flex flex-col items-center pt-8 pb-32 px-4 md:px-8">
-              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath bg-white/10 backdrop-blur-xl rounded-full p-2 border border-emerald-400/40 shadow-[0_0_40px_rgba(52,211,153,0.3)]">
-                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain" style={{ filter: 'drop-shadow(0 0 10px rgba(52,211,153,0.8))' }} />
+              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath rounded-full p-2">
+                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain" style={{ filter: 'drop-shadow(0 0 14px rgba(15,45,30,0.35))' }} />
               </div>
-              <h1 className="text-3xl md:text-5xl font-headline font-extrabold mb-3 tracking-tight text-center text-emerald-300 drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+              <h1 className="text-3xl md:text-5xl font-headline font-extrabold mb-3 tracking-tight text-center text-[#0F2D1E]">
                 Full-Stack GenAI Assistant
               </h1>
               {mounted && (
@@ -1160,7 +1161,7 @@ export default function Home() {
                     <div className="animate-float-slow">
                       <button 
                         onClick={() => setShowAbout(!showAbout)}
-                        className="px-6 py-2.5 border border-emerald-400/40 bg-white/10 backdrop-blur-md text-emerald-200 font-headline font-bold text-xs uppercase tracking-widest shadow-xl hover:bg-white/20 transition-all flex items-center gap-2 rounded-full"
+                        className="px-6 py-2.5 font-headline font-bold text-xs uppercase tracking-widest shadow-xl transition-all flex items-center gap-2 rounded-full"
                       >
                         {showAbout ? <X size={14} /> : <Plus size={14} />}
                         PROJECT CORE
@@ -1391,21 +1392,21 @@ export default function Home() {
               </div>
             )}
 
-            <div className="flex items-center gap-3 md:gap-4">
-              {/* Square Attach Button */}
+            <div className="flex items-center gap-3">
+              {/* Round Attach Button */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-11 h-11 shrink-0 flex items-center justify-center bg-white text-black border-2 border-black hover:bg-[#D4AF37] hover:border-[#D4AF37] transition-all shadow-[0_4px_14px_rgba(0,0,0,0.5)]"
+                className="w-12 h-12 shrink-0 rounded-full flex items-center justify-center bg-[#0F2D1E] text-[#F4EEDD] hover:bg-[#18422E] hover:scale-105 transition-all shadow-[0_8px_20px_-6px_rgba(15,45,30,0.4)]"
                 title="Attach Files"
               >
-                <Paperclip size={20} className="stroke-[2.2]" />
+                <Paperclip size={19} />
               </button>
               <input type="file" multiple ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,image/*,.txt,.md,.js,.json,audio/*" />
 
-              {/* Main Rectangular White/Ivory Input Box with Golden/Emerald Glow Border */}
+              {/* Main Pill-Rounded Input Container */}
               <div
-                className="flex-grow flex items-center bg-white border-2 border-[#000000] focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/50 transition-all cursor-text min-h-[44px] px-4 py-2 shadow-[0_6px_20px_rgba(0,0,0,0.6)]"
+                className="flex-grow flex items-center bg-[#F4F8F5] border border-emerald-900/10 focus-within:border-[#0F2D1E] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#0F2D1E]/10 transition-all cursor-text min-h-[50px] px-6 py-2.5 rounded-full shadow-[0_10px_30px_-10px_rgba(15,45,30,0.12)]"
                 onClick={() => textareaRef.current?.focus()}
               >
                 <div className="relative flex-grow min-h-[1.5rem] font-mono text-xs md:text-sm flex items-center">
@@ -1415,36 +1416,36 @@ export default function Home() {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={input ? "" : "How may I assist you?"}
-                    className="absolute inset-0 w-full h-full opacity-0 z-10 font-mono text-xs md:text-sm cursor-text resize-none bg-transparent border-0 ring-0 focus:ring-0 outline-none p-0 text-black"
+                    className="absolute inset-0 w-full h-full opacity-0 z-10 font-mono text-xs md:text-sm cursor-text resize-none bg-transparent border-0 ring-0 focus:ring-0 outline-none p-0 text-[#0F2D1E]"
                     rows={1}
                   />
 
-                  <div className="w-full break-all whitespace-pre-wrap text-black pointer-events-none flex flex-wrap items-center font-mono font-medium">
+                  <div className="w-full break-all whitespace-pre-wrap text-[#0F2D1E] pointer-events-none flex flex-wrap items-center font-mono font-medium">
                     {!input && (
-                      <span className="text-gray-400 font-mono">How may I assist you?</span>
+                      <span className="text-[#4E7560] font-mono">How may I assist you?</span>
                     )}
-                    <span className="text-black">{input}</span>
-                    <span className="w-2.5 h-4 bg-black cursor-blink shrink-0 ml-1 inline-block" />
+                    <span className="text-[#0F2D1E]">{input}</span>
+                    <span className="w-2.5 h-4 bg-[#0F2D1E] cursor-blink shrink-0 ml-1 inline-block" />
                   </div>
                 </div>
               </div>
 
-              {/* Square Mic Button */}
+              {/* Round Mic Button */}
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`w-11 h-11 shrink-0 flex items-center justify-center transition-all shadow-[0_4px_14px_rgba(0,0,0,0.5)] border-2 ${isListening ? 'border-red-500 bg-red-500 text-white animate-pulse' : 'border-black bg-white text-black hover:bg-[#D4AF37] hover:border-[#D4AF37]'}`}
+                className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center transition-all shadow-[0_8px_20px_-6px_rgba(15,45,30,0.4)] ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-[#0F2D1E] text-[#F4EEDD] hover:bg-[#18422E] hover:scale-105'}`}
                 title={isListening ? "Stop listening" : "Start voice assistant"}
               >
-                {isListening ? <MicOff size={20} /> : <Mic size={20} className="stroke-[2.2]" />}
+                {isListening ? <MicOff size={19} /> : <Mic size={19} />}
               </button>
 
-              {/* EXECUTE / STOP Button */}
+              {/* EXECUTE / STOP Pill Button */}
               {isLoading ? (
                 <button
                   type="button"
                   onClick={handleStop}
-                  className="h-11 px-6 flex items-center justify-center gap-2 border-2 border-red-500 bg-red-950 text-red-400 font-mono font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_16px_rgba(239,68,68,0.4)] hover:bg-red-900 transition-all shrink-0"
+                  className="h-12 px-6 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-full shadow-lg hover:scale-105 transition-all shrink-0"
                 >
                   <StopCircle size={16} />
                   STOP
@@ -1453,7 +1454,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={(!input.trim() && attachedFiles.length === 0)}
-                  className="h-11 px-6 flex items-center justify-center gap-2 border-2 border-[#1F4D32] bg-[#0A1810] hover:bg-[#142A1D] hover:border-[#D4AF37] text-white font-mono font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_16px_rgba(15,42,29,0.7)] transition-all shrink-0 disabled:opacity-50"
+                  className="h-12 px-7 flex items-center justify-center gap-2 bg-[#0F2D1E] hover:bg-[#18422E] text-[#F4EEDD] hover:text-white font-mono font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_10px_25px_-8px_rgba(15,45,30,0.5)] hover:scale-105 transition-all shrink-0 disabled:opacity-50"
                 >
                   <Send size={15} className="rotate-[-20deg]" />
                   EXECUTE
