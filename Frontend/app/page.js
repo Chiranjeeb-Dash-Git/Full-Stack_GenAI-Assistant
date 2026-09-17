@@ -883,7 +883,7 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <span className="brand-mark shrink-0" />
             <div className="flex flex-col justify-center gap-1.5 min-w-0">
-              <span className="font-headline font-bold text-base leading-snug tracking-tight text-[var(--chat-cream)]">
+              <span className="font-headline font-bold text-base leading-snug tracking-tight text-[#050403]">
                 Full-Stack GenAI Assistant
               </span>
             </div>
@@ -1148,11 +1148,11 @@ export default function Home() {
           </div>
           {messages.length === 0 ? (
             <div className="min-h-full flex flex-col items-center pt-4 pb-32 px-4 md:px-8">
-              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath">
-                <img src="/robot-icon.png" alt="Robot AI" className={`w-full h-full object-contain ${isDarkMode ? "invert" : ""}`} />
+              <div className="relative w-28 h-28 mb-4 flex items-center justify-center animate-zoom-breath bg-[#151209] rounded-full p-2 border-2 border-[#C9A227] shadow-[0_0_30px_rgba(201,162,39,0.3)]">
+                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain" style={{ filter: 'brightness(0) saturate(100%) invert(76%) sepia(37%) saturate(737%) hue-rotate(8deg) brightness(95%) contrast(89%)' }} />
               </div>
               <h1 className="text-3xl md:text-4xl font-headline font-bold mb-3 tracking-tighter text-center shimmer-text">
-                WELCOME
+                Full-Stack GenAI Assistant
               </h1>
               {mounted && (
                 <div className="flex flex-col items-center w-full max-w-2xl">
@@ -1279,9 +1279,9 @@ export default function Home() {
                       ) : (
                         message.content || (
                           <div className="flex items-center gap-1.5 h-6 px-1">
-                            <span className="w-1.5 h-1.5 bg-black rounded-full animate-[bounce_1s_infinite_-0.3s]"></span>
-                            <span className="w-1.5 h-1.5 bg-black rounded-full animate-[bounce_1s_infinite_-0.15s]"></span>
-                            <span className="w-1.5 h-1.5 bg-black rounded-full animate-[bounce_1s_infinite_0s]"></span>
+                            <span className="w-1.5 h-1.5 bg-[#C9A227] rounded-full animate-[bounce_1s_infinite_-0.3s]"></span>
+                            <span className="w-1.5 h-1.5 bg-[#C9A227] rounded-full animate-[bounce_1s_infinite_-0.15s]"></span>
+                            <span className="w-1.5 h-1.5 bg-[#C9A227] rounded-full animate-[bounce_1s_infinite_0s]"></span>
                           </div>
                         )
                       )}
