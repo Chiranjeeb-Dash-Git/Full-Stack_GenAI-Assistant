@@ -704,12 +704,12 @@
   }
 }
 
-/* The actual WELCOME/message canvas: keep this layer inside the scrollable chat area. */
+/* The actual WELCOME/message canvas: textured dark void with gold ambient glows */
 .chat-console-shell .chat-scroll-area {
   position: relative;
   isolation: isolate;
   overflow-x: hidden;
-  background: #f8f8f2 !important;
+  background: #0B0A08 !important;
 }
 .chat-console-shell .chat-scroll-area > *:not(.chat-canvas-visual) {
   position: relative;
@@ -722,18 +722,18 @@
   overflow: hidden;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 44%, rgba(255,255,255,.9) 0%, rgba(255,255,255,.4) 34%, transparent 68%),
-    linear-gradient(135deg, rgba(220,235,221,.55), rgba(251,250,246,.92) 46%, rgba(216,197,136,.2));
+    radial-gradient(ellipse at 50% 44%, rgba(29,25,15,.85) 0%, rgba(15,12,7,.95) 45%, #050403 80%),
+    linear-gradient(135deg, rgba(33,27,16,.6), rgba(11,10,8,.95) 50%, rgba(201,162,39,.08));
 }
 .chat-console-shell .chat-canvas-grid {
   position: absolute;
   inset: -20%;
-  opacity: .3;
+  opacity: 0.22;
   background-image:
-    linear-gradient(rgba(14,75,51,.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(14,75,51,.1) 1px, transparent 1px);
+    linear-gradient(rgba(201,162,39,.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,162,39,.15) 1px, transparent 1px);
   background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse at center, black 0%, rgba(0,0,0,.72) 42%, transparent 78%);
+  mask-image: radial-gradient(ellipse at center, black 0%, rgba(0,0,0,.65) 42%, transparent 78%);
   animation: chat-canvas-grid-drift 22s linear infinite;
 }
 .chat-console-shell .chat-canvas-glow {
@@ -741,27 +741,27 @@
   width: clamp(240px, 34vw, 520px);
   aspect-ratio: 1;
   border-radius: 50%;
-  filter: blur(12px);
-  mix-blend-mode: multiply;
-  opacity: .58;
+  filter: blur(28px);
+  mix-blend-mode: screen;
+  opacity: 0.35;
   will-change: transform;
 }
 .chat-console-shell .chat-canvas-glow-one {
   top: -22%;
   right: -10%;
-  background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.95), rgba(31,122,82,.58) 42%, transparent 72%);
+  background: radial-gradient(circle at 34% 30%, rgba(232,205,122,.35), rgba(201,162,39,.18) 42%, transparent 72%);
   animation: chat-canvas-float-one 13s ease-in-out infinite;
 }
 .chat-console-shell .chat-canvas-glow-two {
   bottom: -26%;
   left: 12%;
-  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.9), rgba(174,138,52,.4) 42%, transparent 72%);
+  background: radial-gradient(circle at 35% 30%, rgba(240,223,160,.28), rgba(156,122,28,.12) 42%, transparent 72%);
   animation: chat-canvas-float-two 17s ease-in-out infinite;
 }
 .chat-console-shell .chat-canvas-beam {
   position: absolute;
   inset: -20% -60%;
-  background: linear-gradient(112deg, transparent 42%, rgba(255,255,255,.62) 49%, rgba(216,197,136,.15) 52%, transparent 60%);
+  background: linear-gradient(112deg, transparent 42%, rgba(232,205,122,.12) 49%, rgba(201,162,39,.05) 52%, transparent 60%);
   transform: translateX(-28%) rotate(-4deg);
   animation: chat-canvas-beam-sweep 11s ease-in-out infinite;
 }
@@ -778,8 +778,8 @@
   50% { transform: translate3d(170px, -110px, 0) scale(1.2); }
 }
 @keyframes chat-canvas-beam-sweep {
-  0%, 100% { transform: translateX(-32%) rotate(-4deg); opacity: .12; }
-  50% { transform: translateX(32%) rotate(-4deg); opacity: .68; }
+  0%, 100% { transform: translateX(-32%) rotate(-4deg); opacity: 0.12; }
+  50% { transform: translateX(32%) rotate(-4deg); opacity: 0.45; }
 }
 @media (prefers-reduced-motion: reduce) {
   .chat-console-shell .chat-canvas-grid,

@@ -866,48 +866,50 @@ export default function Home() {
         {/* Mockup Header in Sidebar */}
         <div className="flex flex-col gap-1 mb-8">
           <div className="flex items-center gap-4">
-            <img src="/robot-icon.png" alt="Logo" className={`w-[60px] h-[60px] shrink-0 ${isDarkMode ? "invert" : ""}`} />
+            <span className="brand-mark shrink-0" />
             <div className="flex flex-col justify-center gap-1.5 min-w-0">
-              <span className="font-headline font-bold text-lg leading-none text-black tracking-tight">Full-Stack GenAI Assistant</span>
+              <span className="font-headline font-bold text-base leading-snug tracking-tight text-[var(--chat-cream)]">
+                Full-Stack GenAI Assistant
+              </span>
             </div>
           </div>
         </div>
 
         <button
           onClick={createNewChat}
-          className="premium-button flex items-center justify-center gap-3 w-full mb-6 font-label uppercase"
+          className="new-chat-sheen w-full mb-6"
         >
           <Plus size={18} />
           New Discussion
         </button>
 
-        <div className="chat-search flex items-center gap-2 mt-4 px-3 py-2 border border-black/10 bg-[#F3F1E9] rounded-xl text-black/50">
+        <div className="chat-search flex items-center gap-2 mt-4 px-3 py-2 border border-[#332A18] bg-[#151209] rounded-xl text-[var(--chat-taupe)]">
           <Search size={14} />
-          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations" className="!border-0 !p-0 !bg-transparent text-xs w-full" />
+          <input value={chatSearch} onChange={e => setChatSearch(e.target.value)} placeholder="Search conversations..." className="!border-0 !p-0 !bg-transparent text-xs w-full text-[var(--chat-cream)]" />
         </div>
         <div className="flex-1 overflow-y-auto mt-2 px-1 custom-scrollbar space-y-2">
-          <div className="text-[10px] text-black font-mono font-bold uppercase tracking-[0.2em] mb-4 px-2">MEMORY_BANK</div>
+          <div className="text-[10px] text-[var(--chat-taupe)] font-mono font-bold uppercase tracking-[0.2em] mb-4 px-2">MEMORY_BANK</div>
           {chats.filter(chat => !chatSearch.trim() || (chat.title || chat.messages?.[0]?.content || "").toLowerCase().includes(chatSearch.toLowerCase())).map((chat) => (
             <div key={chat.id} className="relative group">
               {editingChatId === chat.id ? (
-                <div className="flex items-center gap-2 p-2 w-full border border-black bg-white">
-                  <span className="material-symbols-outlined scale-75">edit</span>
+                <div className="flex items-center gap-2 p-2 w-full border border-[#332A18] bg-[#151209]">
+                  <span className="material-symbols-outlined scale-75 text-[var(--chat-gold)]">edit</span>
                   <input
                     autoFocus
                     value={editChatTitle}
                     onChange={(e) => setEditChatTitle(e.target.value)}
                     onBlur={() => saveChatTitle(chat.id, editChatTitle || "Session")}
                     onKeyDown={(e) => e.key === "Enter" && saveChatTitle(chat.id, editChatTitle || "Session")}
-                    className="flex-1 min-w-0 bg-transparent outline-none text-[12px] font-mono text-black font-medium uppercase"
+                    className="flex-1 min-w-0 bg-transparent outline-none text-[12px] font-mono text-[var(--chat-cream)] font-medium uppercase"
                   />
                 </div>
               ) : (
                 <>
                   <button
                     onClick={() => selectChat(chat)}
-                    className={`flex items-center gap-3 p-3 w-full transition-all text-[12px] font-mono text-left truncate border ${currentChatId === chat.id
-                      ? "bg-black/5 border-black text-black"
-                      : "border-transparent text-black hover:bg-black/5"
+                    className={`flex items-center gap-3 p-3 w-full transition-all text-[12px] font-mono text-left truncate border rounded-xl ${currentChatId === chat.id
+                      ? "bg-[#1D190F] border-[#9C7A1C] text-[var(--chat-gold-pale)]"
+                      : "border-transparent text-[var(--chat-taupe)] hover:bg-[#151209] hover:text-[var(--chat-cream)]"
                       }`}
                   >
                     <span className="material-symbols-outlined scale-75" style={{ fontVariationSettings: currentChatId === chat.id ? "'FILL' 1" : "'FILL' 0" }}>
@@ -917,16 +919,16 @@ export default function Home() {
                       {chat.title && chat.title !== "New Session" ? chat.title : (chat.messages.length > 0 ? chat.messages[0].content : "Empty_Session")}
                     </span>
                   </button>
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover:opacity-100 transition-all gap-1 bg-white">
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover:opacity-100 transition-all gap-1 bg-[#151209] p-1 rounded-md">
                     <button
                       onClick={(e) => { e.stopPropagation(); setEditingChatId(chat.id); setEditChatTitle(chat.title && chat.title !== "New Session" ? chat.title : ""); }}
-                      className="p-1 text-black/50 hover:text-black"
+                      className="p-1 text-[var(--chat-taupe)] hover:text-[var(--chat-gold)]"
                     >
                       <Edit2 size={12} />
                     </button>
                     <button
                       onClick={(e) => deleteChat(e, chat.id)}
-                      className="p-1 text-black/50 hover:text-black z-10"
+                      className="p-1 text-[var(--chat-taupe)] hover:text-red-400 z-10"
                     >
                       <span className="material-symbols-outlined scale-75">close</span>
                     </button>
@@ -937,30 +939,30 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="p-4 mt-auto border-t-2 border-black bg-white relative">
+        <div className="p-4 mt-auto border-t border-[#332A18] bg-[#0B0A08] relative">
           <div
             onClick={() => user ? null : setIsAuthVisible(true)}
-            className="flex items-center gap-3 w-full cursor-pointer hover:bg-black/5 p-3 transition-colors group border-2 border-transparent hover:border-black"
+            className="flex items-center gap-3 w-full cursor-pointer hover:bg-[#151209] p-3 transition-colors group border border-[#332A18] rounded-xl"
           >
-            <div className="w-10 h-10 bg-black text-white flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#ccc] group-hover:scale-110 transition-transform">
+            <div className="w-10 h-10 bg-[#1D190F] border border-[#9C7A1C] text-[var(--chat-gold-pale)] flex items-center justify-center shrink-0 rounded-lg shadow-[2px_2px_0px_#332A18] group-hover:scale-105 transition-transform">
               {user ? (
                 <span className="font-headline font-bold text-lg">{user.name[0]}</span>
               ) : (
-                <Bot size={22} />
+                <Bot size={22} className="text-[var(--chat-gold)]" />
               )}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[14px] font-headline font-bold truncate text-black uppercase leading-tight">
+              <span className="text-[13px] font-headline font-bold truncate text-[var(--chat-cream)] uppercase leading-tight">
                 {user ? user.name : "LOGIN / SIGNUP"}
               </span>
-              <span className="text-[10px] text-black/50 font-label uppercase tracking-tighter">
+              <span className="text-[10px] text-[var(--chat-taupe)] font-label uppercase tracking-tighter">
                 {user ? "Identity_Confirmed" : "No active session"}
               </span>
             </div>
             {user && (
               <button
                 onClick={(e) => { e.stopPropagation(); setUser(null); }}
-                className="ml-auto p-1.5 hover:bg-black/5 text-black/50 hover:text-black transition-all"
+                className="ml-auto p-1.5 hover:bg-black/20 text-[var(--chat-taupe)] hover:text-red-400 transition-all"
                 title="Logout"
               >
                 <span className="material-symbols-outlined scale-75">logout</span>
@@ -1149,7 +1151,7 @@ export default function Home() {
                     <div className="animate-float-slow">
                       <button 
                         onClick={() => setShowAbout(!showAbout)}
-                        className="px-6 py-2 border-2 border-black bg-white text-black font-headline font-bold text-xs uppercase tracking-widest shadow-[4px_4px_0px_#ddd] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center gap-2"
+                        className="px-6 py-2.5 border border-[#9C7A1C] bg-[#1D190F] text-[var(--chat-gold-pale)] font-headline font-bold text-xs uppercase tracking-widest shadow-[0_10px_25px_-10px_rgba(201,162,39,0.4)] hover:border-[var(--chat-gold)] hover:text-[var(--chat-cream)] transition-all flex items-center gap-2 rounded-xl"
                       >
                         {showAbout ? <X size={14} /> : <Plus size={14} />}
                         PROJECT CORE
@@ -1160,8 +1162,8 @@ export default function Home() {
                   {/* Conditional About Me Section */}
                   {showAbout && (
                     <div className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-500">
-                      <div className="p-5 border-2 border-black bg-white shadow-[6px_6px_0px_#000] relative">
-                        <div className="absolute -top-3 left-4 bg-black text-white px-3 py-0.5 font-headline font-bold text-[10px] uppercase tracking-widest">
+                      <div className="p-6 border border-[#332A18] bg-[#151209] rounded-2xl shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] relative text-[var(--chat-cream)]">
+                        <div className="absolute -top-3 left-4 bg-gradient-to-r from-[#9C7A1C] to-[#C9A227] text-[#050403] px-3 py-0.5 font-headline font-bold text-[10px] uppercase tracking-widest rounded-md shadow-md">
                           SYSTEM ARCHITECTURE & CORE
                         </div>
                         
@@ -1169,25 +1171,25 @@ export default function Home() {
                           {/* Left Column */}
                           <div className="space-y-4">
                             <div>
-                              <span className="text-[8px] font-label text-black/90 font-bold uppercase block mb-1 tracking-tighter">PROJECT_NAME</span>
-                              <span className="px-3 py-1.5 border-2 border-black font-body font-bold text-sm text-black bg-white inline-block shadow-[2px_2px_0px_#000]">
+                              <span className="text-[9px] font-mono text-[var(--chat-taupe)] font-bold uppercase block mb-1 tracking-wider">PROJECT_NAME</span>
+                              <span className="px-3 py-1.5 border border-[#332A18] font-body font-bold text-sm text-[var(--chat-gold-pale)] bg-[#1D190F] inline-block rounded-lg shadow-sm">
                                 Full-Stack GenAI Assistant
                               </span>
                             </div>
                             <div className="flex flex-wrap gap-x-3 gap-y-3">
                               <div>
-                                <span className="text-[8px] font-label text-black/90 font-bold uppercase block mb-1 tracking-tighter">DEVELOPER</span>
-                                <span className="px-2 py-1 border-2 border-black font-body font-bold text-[10px] text-black bg-white inline-block shadow-[2px_2px_0px_#000]">
+                                <span className="text-[9px] font-mono text-[var(--chat-taupe)] font-bold uppercase block mb-1 tracking-wider">DEVELOPER</span>
+                                <span className="px-2.5 py-1 border border-[#332A18] font-body font-bold text-[11px] text-[var(--chat-cream)] bg-[#1D190F] inline-block rounded-lg">
                                   Chiranjeeb Dash
                                 </span>
                               </div>
                               <div>
-                                <span className="text-[8px] font-label text-black/90 font-bold uppercase block mb-1 tracking-tighter text-blue-600">GITHUB</span>
+                                <span className="text-[9px] font-mono text-[var(--chat-gold)] font-bold uppercase block mb-1 tracking-wider">GITHUB</span>
                                 <a 
                                   href="https://github.com/Chiranjeeb-Dash-Git" 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="px-2 py-1 border-2 border-black font-body font-bold text-[10px] text-white bg-black hover:bg-white hover:text-black transition-all inline-block shadow-[2px_2px_0px_#ddd]"
+                                  className="px-2.5 py-1 border border-[#9C7A1C] font-body font-bold text-[11px] text-[#050403] bg-gradient-to-r from-[#E8CD7A] to-[#C9A227] hover:opacity-90 transition-all inline-block rounded-lg shadow-sm"
                                 >
                                   Profile ↗
                                 </a>
@@ -1197,13 +1199,13 @@ export default function Home() {
                           
                           {/* Right Column */}
                           <div className="space-y-3">
-                            <span className="text-[8px] font-label text-black/90 font-bold uppercase block tracking-tighter">CORE_STACK</span>
-                            <div className="flex flex-wrap gap-2 text-black">
+                            <span className="text-[9px] font-mono text-[var(--chat-taupe)] font-bold uppercase block tracking-wider">CORE_STACK</span>
+                            <div className="flex flex-wrap gap-2">
                                {[
                                  "Next.js 14", "Tailwind CSS", "Groq AI", "Llama 3.3", "Express.js", "Tavily", 
                                  "PDF Parse", "Lucide Icons", "React Markdown", "Highlight.js"
                                ].map(t => (
-                                 <span key={t} className="px-2.5 py-1 border-2 border-black font-body font-bold text-[10px] items-center justify-center flex hover:bg-black hover:text-white transition-colors cursor-default shadow-[2px_2px_0px_#000]">
+                                 <span key={t} className="px-2.5 py-1 border border-[#332A18] font-body font-bold text-[10px] items-center justify-center flex bg-[#1D190F] text-[var(--chat-taupe)] hover:text-[var(--chat-cream)] hover:border-[#9C7A1C] transition-colors cursor-default rounded-md">
                                    {t}
                                  </span>
                                ))}
