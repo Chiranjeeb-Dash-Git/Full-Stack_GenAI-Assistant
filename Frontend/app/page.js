@@ -885,7 +885,7 @@ export default function Home() {
   if (showLanding) return <LandingPage onLaunch={() => setShowLanding(false)} />;
 
   return (
-    <div className="chat-console-shell flex h-screen w-full bg-[var(--paper)] text-[var(--cream)] font-body overflow-hidden relative">
+    <div className="chat-console-shell flex h-screen w-full font-body overflow-hidden relative" style={{ background: 'var(--paper)', color: 'var(--cream)' }}>
       <EmbersField />
 
       {sidebarOpen && (
