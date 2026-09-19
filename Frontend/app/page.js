@@ -616,7 +616,12 @@ export default function Home() {
           {/* Model Badge */}
           <div className="model-badge hidden sm:flex">
             <span className="pulse" />
-            <b>{selectedModel.includes("llama-3.3") ? "LLaMA 3.3 · 70B" : selectedModel.includes("llama-3.1") ? "LLaMA 3.1 · 8B" : selectedModel.includes("mixtral") ? "Mixtral 8x7B" : "Gemma 2 · 9B"}</b>&nbsp;via Groq LPU
+            <b>
+              {selectedModel.includes("llama-3.3") ? "LLaMA 3.3 · 70B" :
+               selectedModel.includes("llama-3.1") ? "LLaMA 3.1 · 8B" :
+               selectedModel.includes("mixtral") ? "Mixtral 8x7B" :
+               selectedModel.includes("deepseek") ? "DeepSeek R1 · 70B" : "Groq AI Model"}
+            </b>&nbsp;via Groq LPU
           </div>
 
           <div className="flex items-center gap-3">
@@ -684,12 +689,12 @@ export default function Home() {
                     <select
                       value={selectedModel}
                       onChange={(e) => setSelectedModel(e.target.value)}
-                      className="w-full p-2 rounded-xl border border-[var(--line)] bg-[var(--panel-2)] text-[var(--cream)] font-medium outline-none cursor-pointer"
+                      className="w-full p-2.5 rounded-xl border border-[var(--line)] bg-[var(--panel-2)] text-[var(--cream)] font-semibold outline-none cursor-pointer focus:border-[var(--gold)]"
                     >
-                      <option value="llama-3.3-70b-versatile">LLaMA 3.3 70B (Versatile)</option>
-                      <option value="llama-3.1-8b-instant">LLaMA 3.1 8B (Instant)</option>
-                      <option value="mixtral-8x7b-32768">Mixtral 8x7B (32K context)</option>
-                      <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B</option>
+                      <option value="llama-3.3-70b-versatile" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3.3 70B (Versatile)</option>
+                      <option value="llama-3.1-8b-instant" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3.1 8B (Instant)</option>
+                      <option value="mixtral-8x7b-32768" className="bg-[var(--panel)] text-[var(--cream)]">Mixtral 8x7B (32K context)</option>
+                      <option value="deepseek-r1-distill-llama-70b" className="bg-[var(--panel)] text-[var(--cream)]">DeepSeek R1 Distill 70B</option>
                     </select>
                   </div>
                 </div>
