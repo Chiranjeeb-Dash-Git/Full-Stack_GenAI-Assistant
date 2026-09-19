@@ -4,27 +4,64 @@ import { NextResponse } from "next/server";
 export const runtime = 'nodejs';
 
 const DEFAULT_GEMINI_MODEL = "gemini-3.6-flash";
+const GEMINI_MODEL_PREFERENCES = [
+  process.env.GEMINI_MODEL,
+  DEFAULT_GEMINI_MODEL,
+  "gemini-flash-latest",
+  "gemini-3.5-flash",
+  "gemini-3.1-flash-lite",
+].filter(Boolean);
 
-function resolveGeminiModel(modelName) {
-  // Gemini 1.5 and 2.0 model IDs used by older versions of the UI are no
-  // longer available for this API key. Keep those selections working by
-  // routing them to the current stable Flash model.
-  if (!modelName || modelName.startsWith("gemini-1.5") || modelName.startsWith("gemini-2.0") || modelName.startsWith("gemini-2.5")) {
-    return DEFAULT_GEMINI_MODEL;
+let discoveredGeminiModel;
+
+async function resolveGeminiModel(modelName) {
+  const requested = modelName?.replace(/^models\//, "");
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY or GOOGLE_API_KEY is not configured.");
+
+  // Prefer a configured/current model, but verify it against Google's live
+  // model catalogue so retired IDs never take the whole chat service down.
+  if (discoveredGeminiModel && (!requested || requested === discoveredGeminiModel)) {
+    return discoveredGeminiModel;
   }
-  return modelName;
+
+  const catalogResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {
+    headers: { Accept: "application/json" },
+    cache: "no-store",
+  });
+  if (!catalogResponse.ok) {
+    throw new Error(`Gemini model catalogue unavailable (${catalogResponse.status}).`);
+  }
+
+  const catalog = await catalogResponse.json();
+  const available = new Set((catalog.models || [])
+    .filter(entry => entry.supportedGenerationMethods?.includes("generateContent"))
+    .map(entry => entry.name?.replace(/^models\//, ""))
+    .filter(Boolean));
+
+  const requestedIsAvailable = requested && available.has(requested);
+  const selected = requestedIsAvailable
+    ? requested
+    : GEMINI_MODEL_PREFERENCES.find(candidate => available.has(candidate));
+
+  if (!selected) throw new Error("No Gemini generateContent model is available for this API key.");
+  discoveredGeminiModel = selected;
+  return selected;
 }
 
-async function generateGeminiResponse(messages, modelName = DEFAULT_GEMINI_MODEL) {
-  const geminiApiKey = process.env.GEMINI_API_KEY;
-  if (!geminiApiKey) throw new Error("GEMINI_API_KEY is not set.");
+async function generateGeminiResponse(messages, modelName) {
+  const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!geminiApiKey) throw new Error("GEMINI_API_KEY or GOOGLE_API_KEY is not configured.");
 
-  const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${resolveGeminiModel(modelName)}:generateContent?key=${geminiApiKey}`;
-  
-  const contents = messages.map(m => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: String(m.content || "") }]
-  }));
+  const resolvedModel = await resolveGeminiModel(modelName);
+  const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${resolvedModel}:generateContent?key=${geminiApiKey}`;
+
+  const contents = messages
+    .filter(m => m && (m.role === "user" || m.role === "assistant") && String(m.content || "").trim())
+    .map(m => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: String(m.content) }]
+    }));
 
   const res = await fetch(geminiEndpoint, {
     method: "POST",
@@ -106,15 +143,10 @@ export async function POST(req) {
     }
 
     // Strategy 2: Fall back to Groq API with valid active models
-    const apiKey = process.env.GROQ_API_KEY || process.env.GROK_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (apiKey) {
       const groqClient = new Groq({ apiKey });
-      const candidateModels = [
-        "llama-3.3-70b-versatile",
-        "llama-3.1-8b-instant",
-        "llama3-70b-8192",
-        "llama3-8b-8192"
-      ];
+      const candidateModels = [process.env.GROQ_MODEL || "llama-3.3-70b-versatile"];
 
       for (const candidate of candidateModels) {
         try {
@@ -186,7 +218,7 @@ export async function POST(req) {
     }
 
     return NextResponse.json(
-      { error: "AI service is currently upgrading. Please try sending your message again in a moment." },
+      { error: "No AI provider is available. Configure GEMINI_API_KEY (recommended) or GROQ_API_KEY in the deployment environment." },
       { status: 500 }
     );
 
