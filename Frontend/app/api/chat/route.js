@@ -3,11 +3,23 @@ import { NextResponse } from "next/server";
 
 export const runtime = 'nodejs';
 
-async function generateGeminiResponse(messages, modelName = "gemini-1.5-flash") {
+const DEFAULT_GEMINI_MODEL = "gemini-3.6-flash";
+
+function resolveGeminiModel(modelName) {
+  // Gemini 1.5 and 2.0 model IDs used by older versions of the UI are no
+  // longer available for this API key. Keep those selections working by
+  // routing them to the current stable Flash model.
+  if (!modelName || modelName.startsWith("gemini-1.5") || modelName.startsWith("gemini-2.0") || modelName.startsWith("gemini-2.5")) {
+    return DEFAULT_GEMINI_MODEL;
+  }
+  return modelName;
+}
+
+async function generateGeminiResponse(messages, modelName = DEFAULT_GEMINI_MODEL) {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (!geminiApiKey) throw new Error("GEMINI_API_KEY is not set.");
 
-  const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiApiKey}`;
+  const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${resolveGeminiModel(modelName)}:generateContent?key=${geminiApiKey}`;
   
   const contents = messages.map(m => ({
     role: m.role === "assistant" ? "model" : "user",
@@ -73,7 +85,7 @@ export async function POST(req) {
     // Strategy 1: If requested Gemini or default model, try Gemini first
     if (model && (model.startsWith("gemini") || model.includes("gemini"))) {
       try {
-        const text = await generateGeminiResponse(finalMessages, model === "gemini-2.0-flash" ? "gemini-2.0-flash" : "gemini-1.5-flash");
+        const text = await generateGeminiResponse(finalMessages, model);
         const encoder = new TextEncoder();
         return new NextResponse(new ReadableStream({
           start(controller) {
@@ -154,7 +166,7 @@ export async function POST(req) {
 
     // Strategy 3: Direct Gemini fallback if Groq failed or key wasn't available
     try {
-      const text = await generateGeminiResponse(finalMessages, "gemini-1.5-flash");
+      const text = await generateGeminiResponse(finalMessages, DEFAULT_GEMINI_MODEL);
       const encoder = new TextEncoder();
       return new NextResponse(new ReadableStream({
         start(controller) {
