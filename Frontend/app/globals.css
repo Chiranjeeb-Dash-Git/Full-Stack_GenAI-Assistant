@@ -131,7 +131,7 @@
 @media (max-width:640px){.landing-nav a:not(.landing-nav-cta){display:none;}.landing-brand{font-size:16px;}.landing-header{padding:18px 16px;}.landing-sphere{width:220px;height:220px;}.landing-ring-one{width:290px;height:290px;}.landing-ring-two{width:340px;height:340px;}}
 
 /* ═══════════════════════════════════════════════════════════════
-   AUTH OVERLAY & LOGIN DIALOG (ORIGINAL GREEN/IVORY THEME + LAYOUT FIX)
+   AUTH OVERLAY & LOGIN DIALOG
 ═══════════════════════════════════════════════════════════════ */
 .auth-overlay {
   position: fixed;
@@ -504,14 +504,14 @@
 
 .shimmer-bar { height: 8px; border-radius: 4px; width: 100%; background: linear-gradient(90deg, var(--line) 25%, var(--gold-deep) 50%, var(--line) 75%); background-size: 200% auto; animation: stripeMove 1.3s linear infinite; }
 
-/* Input Composer */
+/* Input Composer (STATIC FOCUS - NO ROTATING ANIMATION) */
 .input-shell-wrap {
-  position: relative; border-radius: 23px; padding: 1px; background: var(--line); transition: background 0.3s ease;
+  position: relative; border-radius: 23px; padding: 1.5px; background: var(--line); transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 .input-shell-wrap.focused {
-  background: conic-gradient(from 0deg, var(--gold-deep), var(--gold-pale), var(--gold-deep), var(--panel), var(--gold-deep)); animation: rotateBorder 3s linear infinite;
+  background: var(--gold);
+  box-shadow: 0 0 16px rgba(201, 162, 39, 0.35);
 }
-@keyframes rotateBorder { to { transform: rotate(360deg); } }
 
 .input-shell {
   display: flex; align-items: flex-end; gap: 10px; background: var(--panel); border-radius: 22px; padding: 10px 10px 10px 16px;

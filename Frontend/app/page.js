@@ -169,17 +169,17 @@ export default function Home() {
   const isRequestActive = useRef(false);
   const welcomeSpokenRef = useRef(false);
 
-  // Female voice welcome speaker (ONCE ONLY)
+  // Female voice welcome speaker (STRICTLY FEMALE VOICE ONLY, ONCE ONLY)
   const speakWelcomeMessage = () => {
     if (welcomeSpokenRef.current) return;
     welcomeSpokenRef.current = true;
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
-      const welcomeText = "Welcome to Fullstack GenAI Assistant, how may I assist you today?";
+      const welcomeText = "Welcome, how may I help you";
       const utterance = new SpeechSynthesisUtterance(welcomeText);
-      utterance.rate = 1.0;
-      utterance.pitch = 1.1; // Clear female voice pitch
+      utterance.rate = 0.95;
+      utterance.pitch = 1.2; // High pitch for female tone
       utterance.volume = 1.0;
 
       const findFemaleVoice = () => {
@@ -324,7 +324,7 @@ export default function Home() {
     setShowScrollFab(!nearBottom && messages.length > 0);
   };
 
-  const runAssistantFetch = async (apiPayload, initialMessagesForUI, userTextToSend = "") => {
+  const runAssistantFetch = async (apiPayload, initialMessagesForUI) => {
     setIsLoading(true);
     isRequestActive.current = true;
     try {
@@ -332,14 +332,15 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: apiPayload.messages,
+          messages: apiPayload.messages.map(m => ({ role: m.role, content: m.content })),
           model: selectedModel,
           mode: consoleMode
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get assistant response");
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson.error || `Server error: ${response.status}`);
       }
 
       const reader = response.body.getReader();
@@ -348,11 +349,34 @@ export default function Home() {
 
       setMessages([...initialMessagesForUI, { role: "assistant", content: "" }]);
 
+      let buffer = "";
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        assistantReply += chunk;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (trimmed.startsWith("data: ")) {
+            const jsonStr = trimmed.replace(/^data:\s*/, "");
+            if (jsonStr === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(jsonStr);
+              if (parsed.content) {
+                assistantReply += parsed.content;
+                setMessages([...initialMessagesForUI, { role: "assistant", content: assistantReply }]);
+              }
+            } catch (e) {
+              // Ignore parse errors on partial json tokens
+            }
+          }
+        }
+      }
+
+      if (!assistantReply) {
+        assistantReply = "Hello! How can I assist you today?";
         setMessages([...initialMessagesForUI, { role: "assistant", content: assistantReply }]);
       }
 
@@ -361,8 +385,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Chat error:", err);
-      const fallbackReply = "Revenue climbed 18% quarter over quarter, driven mainly by the new enterprise tier. Operating costs stayed flat, so margin expanded to 34% — the strongest quarter this year.";
-      setMessages([...initialMessagesForUI, { role: "assistant", content: fallbackReply }]);
+      setMessages([...initialMessagesForUI, { role: "assistant", content: `I'm here to help! ${err.message ? "(" + err.message + ")" : ""}` }]);
     } finally {
       setIsLoading(false);
       isRequestActive.current = false;
@@ -386,7 +409,7 @@ export default function Home() {
     }
 
     const apiPayload = { messages: newMsgs };
-    runAssistantFetch(apiPayload, newMsgs, textToSend);
+    runAssistantFetch(apiPayload, newMsgs);
   };
 
   const handleMicClick = () => {
@@ -499,7 +522,7 @@ export default function Home() {
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${currentChatId === chat.id ? "bg-[var(--gold)] shadow-[0_0_6px_rgba(201,162,39,0.8)]" : "bg-[var(--line)]"}`} />
                 <span className="truncate flex-1">
-                  {chat.title && chat.title !== "New Session" ? chat.title : (chat.messages.length > 0 ? chat.messages[0].content : "Quarterly report summary")}
+                  {chat.title && chat.title !== "New Session" ? chat.title : (chat.messages.length > 0 ? chat.messages[0].content : "Conversation")}
                 </span>
                 <button
                   onClick={(e) => deleteChat(e, chat.id)}
@@ -620,10 +643,10 @@ export default function Home() {
           className="chat-scroll flex-1 overflow-y-auto px-4 md:px-0 relative"
         >
           {messages.length === 0 ? (
-            /* Empty State Hero - Preserving Robot AI Icon with its animation */
+            /* Empty State Hero - Robot AI Icon with animations */
             <div className="hero-empty show min-h-[75vh] flex flex-col items-center justify-center text-center max-w-2xl mx-auto py-10">
               
-              {/* Animated Robot AI Icon (Preserved & Enhanced) */}
+              {/* Animated Robot AI Icon */}
               <div className="relative w-32 h-32 md:w-40 md:h-40 mb-5 flex items-center justify-center rounded-full p-2 bg-radial from-[var(--gold)]/20 to-transparent">
                 <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain animate-float-slow filter drop-shadow-[0_0_20px_rgba(201,162,39,0.5)]" />
               </div>
@@ -636,25 +659,25 @@ export default function Home() {
               <div className="suggest-grid">
                 <button
                   className="suggest-chip"
-                  onClick={() => handleSendMessage("Summarize the uploaded quarterly report and read it back to me.")}
+                  onClick={() => handleSendMessage("Summarize a document for me.")}
                 >
                   <b>Summarize a document</b>Paste text or drop a PDF to condense
                 </button>
                 <button
                   className="suggest-chip"
-                  onClick={() => handleSendMessage("Explain how LLM streaming over WebSocket works simply.")}
+                  onClick={() => handleSendMessage("Explain a complex AI concept simply.")}
                 >
                   <b>Explain a concept</b>Break down something complex, simply
                 </button>
                 <button
                   className="suggest-chip"
-                  onClick={() => handleSendMessage("Draft a polite follow-up email after a project demo.")}
+                  onClick={() => handleSendMessage("Draft a professional follow-up email.")}
                 >
                   <b>Draft an email</b>Professional, casual, or somewhere between
                 </button>
                 <button
                   className="suggest-chip"
-                  onClick={() => handleSendMessage("/image Futuristic cybernetic laboratory with golden ambient lights")}
+                  onClick={() => handleSendMessage("Generate an image of a futuristic lab.")}
                 >
                   <b>Generate an image</b>Describe it and watch it render
                 </button>
@@ -698,12 +721,12 @@ export default function Home() {
                         <div className="seek">
                           <div className={`fill ${playingMsgIndex === index ? "playing" : ""}`} style={{ width: playingMsgIndex === index ? "65%" : "0%" }} />
                         </div>
-                        <span className="time">{playingMsgIndex === index ? "0:04 / 0:12" : "0:00 / 0:12"}</span>
+                        <span className="time">{playingMsgIndex === index ? "Playing" : "Voice playback"}</span>
                         <span className="lang-chip">EN</span>
                       </div>
                     )}
 
-                    {/* Message Actions Row (Copy, Regenerate, Thumbs) */}
+                    {/* Message Actions Row */}
                     <div className="flex gap-1.5 mt-2 opacity-70 hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => navigator.clipboard.writeText(msg.content)}
@@ -715,7 +738,7 @@ export default function Home() {
                       {msg.role === "assistant" && (
                         <>
                           <button
-                            onClick={() => handleSendMessage(messages[index - 1]?.content || "Please explain further.")}
+                            onClick={() => handleSendMessage(messages[index - 1]?.content || "Please elaborate.")}
                             className="p-1.5 rounded hover:bg-[var(--panel-2)] text-[var(--taupe)] text-xs"
                             title="Regenerate"
                           >
