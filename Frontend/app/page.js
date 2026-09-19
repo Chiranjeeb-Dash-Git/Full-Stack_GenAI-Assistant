@@ -145,15 +145,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState([]);
-  const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isAuthVisible, setIsAuthVisible] = useState(true);
   const [user, setUser] = useState(null);
-  const [showAbout, setShowAbout] = useState(false);
   const [selectedModel, setSelectedModel] = useState("LLaMA 3.3 · 70B");
   const [isListening, setIsListening] = useState(false);
-  const [editingChatId, setEditingChatId] = useState(null);
-  const [editChatTitle, setEditChatTitle] = useState("");
-  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [showLanding, setShowLanding] = useState(true);
   const [chatSearch, setChatSearch] = useState("");
@@ -167,16 +162,6 @@ export default function Home() {
   const [selectedLang, setSelectedLang] = useState("EN");
   const [playingMsgIndex, setPlayingMsgIndex] = useState(null);
 
-  const [voiceSettings, setVoiceSettings] = useState({
-    gender: "female",
-    language: "auto",
-    rate: 1,
-    volume: 1,
-  });
-
-  const [editingMessageIndex, setEditingMessageIndex] = useState(null);
-  const [editingMessageContent, setEditingMessageContent] = useState("");
-
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -184,7 +169,7 @@ export default function Home() {
   const isRequestActive = useRef(false);
   const welcomeSpokenRef = useRef(false);
 
-  // Human voice welcome speaker
+  // Female voice welcome speaker (ONCE ONLY)
   const speakWelcomeMessage = () => {
     if (welcomeSpokenRef.current) return;
     welcomeSpokenRef.current = true;
@@ -194,39 +179,39 @@ export default function Home() {
       const welcomeText = "Welcome to Fullstack GenAI Assistant, how may I assist you today?";
       const utterance = new SpeechSynthesisUtterance(welcomeText);
       utterance.rate = 1.0;
-      utterance.pitch = 1.0;
+      utterance.pitch = 1.1; // Clear female voice pitch
       utterance.volume = 1.0;
 
-      const findHumanVoice = () => {
+      const findFemaleVoice = () => {
         const voices = window.speechSynthesis.getVoices();
         if (!voices || voices.length === 0) return null;
-        return (
-          voices.find(v => v.lang.startsWith("en") && (
-            v.name.includes("Natural") ||
-            v.name.includes("Google") ||
-            v.name.includes("Premium") ||
-            v.name.includes("Samantha") ||
-            v.name.includes("Daniel") ||
-            v.name.includes("Guy") ||
-            v.name.includes("Jenny")
-          )) ||
-          voices.find(v => v.lang.startsWith("en")) ||
-          voices[0]
+        
+        const femaleKeywords = ["female", "samantha", "victoria", "karen", "zira", "google us english", "jenny", "aria"];
+        const maleKeywords = ["male", "guy", "david", "george", "mark", "alex", "daniel"];
+
+        const femaleMatch = voices.find(v => 
+          v.lang.startsWith("en") && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))
         );
+        if (femaleMatch) return femaleMatch;
+
+        const nonMaleMatch = voices.find(v => 
+          v.lang.startsWith("en") && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw))
+        );
+        return nonMaleMatch || voices[0];
       };
 
-      const speakWithVoice = () => {
-        const v = findHumanVoice();
+      const speakWithFemaleVoice = () => {
+        const v = findFemaleVoice();
         if (v) utterance.voice = v;
         window.speechSynthesis.speak(utterance);
       };
 
       const availableVoices = window.speechSynthesis.getVoices();
       if (availableVoices && availableVoices.length > 0) {
-        speakWithVoice();
+        speakWithFemaleVoice();
       } else {
         window.speechSynthesis.onvoiceschanged = () => {
-          speakWithVoice();
+          speakWithFemaleVoice();
           window.speechSynthesis.onvoiceschanged = null;
         };
         window.speechSynthesis.speak(utterance);
@@ -236,11 +221,25 @@ export default function Home() {
     }
   };
 
-  // Trigger speech when entering console or logging in
+  // Manage body scroll for landing page vs chat console
   useEffect(() => {
+    document.documentElement.style.height = showLanding ? "auto" : "100%";
+    document.documentElement.style.overflow = showLanding ? "visible" : "hidden";
+    document.body.style.height = showLanding ? "auto" : "100vh";
+    document.body.style.minHeight = showLanding ? "100vh" : "";
+    document.body.style.overflow = showLanding ? "visible" : "hidden";
+
     if (!showLanding && !isAuthVisible) {
       speakWelcomeMessage();
     }
+
+    return () => {
+      document.documentElement.style.height = "";
+      document.documentElement.style.overflow = "";
+      document.body.style.height = "";
+      document.body.style.minHeight = "";
+      document.body.style.overflow = "";
+    };
   }, [showLanding, isAuthVisible]);
 
   // Particles generator
