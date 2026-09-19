@@ -632,7 +632,7 @@ export default function Home() {
               </button>
 
               {isVoicePopoverOpen && (
-                <div className="absolute right-0 mt-2 w-72 p-4 rounded-2xl bg-[var(--panel)] border border-[var(--line)] shadow-2xl z-50 text-xs flex flex-col gap-3.5 backdrop-blur-md">
+                <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)] p-4 rounded-2xl bg-[var(--panel)] border border-[var(--line)] shadow-2xl z-[9999] text-xs flex flex-col gap-3.5 backdrop-blur-md">
                   <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
                     <span className="font-bold text-[var(--gold-text)] text-sm flex items-center gap-1.5">
                       <SlidersHorizontal size={14} /> Voice &amp; Model Settings
@@ -689,7 +689,7 @@ export default function Home() {
                       <option value="llama-3.3-70b-versatile">LLaMA 3.3 70B (Versatile)</option>
                       <option value="llama-3.1-8b-instant">LLaMA 3.1 8B (Instant)</option>
                       <option value="mixtral-8x7b-32768">Mixtral 8x7B (32K context)</option>
-                      <option value="gemma2-9b-it">Gemma 2 9B (Instruction)</option>
+                      <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 Distill 70B</option>
                     </select>
                   </div>
                 </div>

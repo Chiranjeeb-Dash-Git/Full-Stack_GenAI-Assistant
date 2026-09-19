@@ -52,7 +52,7 @@ export async function POST(req) {
       "llama-3.3-70b-versatile",
       "llama-3.1-8b-instant",
       "mixtral-8x7b-32768",
-      "gemma2-9b-it"
+      "deepseek-r1-distill-llama-70b"
     ];
     const candidateModels = model
       ? [model, ...fallbackModels.filter(m => m !== model)]
