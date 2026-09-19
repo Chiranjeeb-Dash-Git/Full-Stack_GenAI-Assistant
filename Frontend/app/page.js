@@ -693,7 +693,7 @@ export default function Home() {
                     >
                       <option value="llama-3.3-70b-versatile" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3.3 70B (Versatile)</option>
                       <option value="llama-3.1-8b-instant" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3.1 8B (Instant)</option>
-                      <option value="mixtral-8x7b-32768" className="bg-[var(--panel)] text-[var(--cream)]">Mixtral 8x7B (32K context)</option>
+                      <option value="llama3-70b-8192" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3 70B (8K context)</option>
                       <option value="deepseek-r1-distill-llama-70b" className="bg-[var(--panel)] text-[var(--cream)]">DeepSeek R1 Distill 70B</option>
                     </select>
                   </div>
