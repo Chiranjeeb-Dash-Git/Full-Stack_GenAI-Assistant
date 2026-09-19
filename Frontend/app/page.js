@@ -155,7 +155,7 @@ export default function Home() {
   const [editChatTitle, setEditChatTitle] = useState("");
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [showLanding, setShowLanding] = useState(false);
+  const [showLanding, setShowLanding] = useState(true);
   const [chatSearch, setChatSearch] = useState("");
   const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
@@ -173,13 +173,6 @@ export default function Home() {
     rate: 1,
     volume: 1,
   });
-  const [voicesReady, setVoicesReady] = useState(false);
-  const [speechState, setSpeechState] = useState({
-    key: null,
-    text: "",
-    isPaused: false,
-    progress: 0,
-  });
 
   const [editingMessageIndex, setEditingMessageIndex] = useState(null);
   const [editingMessageContent, setEditingMessageContent] = useState("");
@@ -190,7 +183,6 @@ export default function Home() {
   const chatScrollRef = useRef(null);
   const isRequestActive = useRef(false);
   const welcomeSpokenRef = useRef(false);
-  const speechRef = useRef(null);
 
   // Human voice welcome speaker
   const speakWelcomeMessage = () => {
@@ -311,11 +303,6 @@ export default function Home() {
       setMessages([]);
       setCurrentChatId(null);
     }
-  };
-
-  const saveChatTitle = (id, newTitle) => {
-    setChats(prev => prev.map(c => c.id === id ? { ...c, title: newTitle } : c));
-    setEditingChatId(null);
   };
 
   const handleClearChat = () => {
