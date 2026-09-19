@@ -47,27 +47,44 @@ export async function POST(req) {
       return msg;
     }));
 
-    // Standard Groq model ID mapping
-    let targetModel = "llama-3.3-70b-versatile";
-    if (model && model.includes("gpt-oss")) {
-      targetModel = "llama-3.3-70b-versatile";
-    }
+    // Candidate models to attempt in order of preference
+    const candidateModels = [
+      "qwen/qwen3.8-27b",
+      "groq/compound",
+      "openai/gpt-oss-120b",
+      "llama-3.3-70b-versatile"
+    ];
 
-    const response = await client.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: `You are Full-Stack GenAI Assistant created by Chiranjeeb Dash.
+    let response = null;
+    let lastError = null;
+
+    for (const modelCandidate of candidateModels) {
+      try {
+        response = await client.chat.completions.create({
+          messages: [
+            {
+              role: "system",
+              content: `You are Full-Stack GenAI Assistant created by Chiranjeeb Dash.
 - Be extremely helpful, direct, concise, and intelligent.
 - Answer user questions naturally and accurately without unnecessary boilerplate.`
-        },
-        ...finalMessages
-      ],
-      model: targetModel,
-      temperature: 0.7,
-      max_completion_tokens: 1024,
-      stream: true,
-    });
+            },
+            ...finalMessages
+          ],
+          model: modelCandidate,
+          temperature: 0.7,
+          max_completion_tokens: 1024,
+          stream: true,
+        });
+        if (response) break;
+      } catch (err) {
+        console.warn(`Model ${modelCandidate} failed:`, err?.message || err);
+        lastError = err;
+      }
+    }
+
+    if (!response) {
+      throw lastError || new Error("All AI models failed to respond.");
+    }
 
     const encoder = new TextEncoder();
     return new NextResponse(new ReadableStream({
