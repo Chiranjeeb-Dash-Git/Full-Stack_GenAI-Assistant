@@ -147,7 +147,7 @@ export default function Home() {
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [isAuthVisible, setIsAuthVisible] = useState(true);
   const [user, setUser] = useState(null);
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [selectedModel, setSelectedModel] = useState("gemini-1.5-flash");
   const [isListening, setIsListening] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false); // Default to light mode after login
   const [showLanding, setShowLanding] = useState(true);
@@ -617,11 +617,12 @@ export default function Home() {
           <div className="model-badge hidden sm:flex">
             <span className="pulse" />
             <b>
-              {selectedModel.includes("llama-3.3") ? "LLaMA 3.3 · 70B" :
+              {selectedModel.includes("gemini-1.5") ? "Google Gemini 1.5 Flash" :
+               selectedModel.includes("gemini-2.0") ? "Google Gemini 2.0 Flash" :
+               selectedModel.includes("llama-3.3") ? "LLaMA 3.3 · 70B" :
                selectedModel.includes("llama-3.1") ? "LLaMA 3.1 · 8B" :
-               selectedModel.includes("mixtral") ? "Mixtral 8x7B" :
-               selectedModel.includes("deepseek") ? "DeepSeek R1 · 70B" : "Groq AI Model"}
-            </b>&nbsp;via Groq LPU
+               selectedModel.includes("deepseek") ? "DeepSeek R1 · 70B" : "GenAI Model"}
+            </b>&nbsp;via High-Speed Engine
           </div>
 
           <div className="flex items-center gap-3">
@@ -691,10 +692,11 @@ export default function Home() {
                       onChange={(e) => setSelectedModel(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-[var(--line)] bg-[var(--panel-2)] text-[var(--cream)] font-semibold outline-none cursor-pointer focus:border-[var(--gold)]"
                     >
-                      <option value="llama-3.3-70b-versatile" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3.3 70B (Versatile)</option>
-                      <option value="llama-3.1-8b-instant" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3.1 8B (Instant)</option>
-                      <option value="llama3-70b-8192" className="bg-[var(--panel)] text-[var(--cream)]">LLaMA 3 70B (8K context)</option>
-                      <option value="deepseek-r1-distill-llama-70b" className="bg-[var(--panel)] text-[var(--cream)]">DeepSeek R1 Distill 70B</option>
+                      <option value="gemini-1.5-flash" className="bg-[var(--panel)] text-[var(--cream)]">✨ Google Gemini 1.5 Flash (Primary)</option>
+                      <option value="gemini-2.0-flash" className="bg-[var(--panel)] text-[var(--cream)]">⚡ Google Gemini 2.0 Flash</option>
+                      <option value="llama-3.3-70b-versatile" className="bg-[var(--panel)] text-[var(--cream)]">🦙 LLaMA 3.3 70B (Versatile)</option>
+                      <option value="llama-3.1-8b-instant" className="bg-[var(--panel)] text-[var(--cream)]">🚀 LLaMA 3.1 8B (Instant)</option>
+                      <option value="deepseek-r1-distill-llama-70b" className="bg-[var(--panel)] text-[var(--cream)]">🧠 DeepSeek R1 Distill 70B</option>
                     </select>
                   </div>
                 </div>
