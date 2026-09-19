@@ -47,13 +47,16 @@ export async function POST(req) {
       return msg;
     }));
 
-    // Candidate models to attempt in order of preference
-    const candidateModels = [
-      "qwen/qwen3.8-27b",
-      "groq/compound",
-      "openai/gpt-oss-120b",
-      "llama-3.3-70b-versatile"
+    // Candidate models: use user-selected model first, then fallbacks
+    const fallbackModels = [
+      "llama-3.3-70b-versatile",
+      "llama-3.1-8b-instant",
+      "mixtral-8x7b-32768",
+      "gemma2-9b-it"
     ];
+    const candidateModels = model
+      ? [model, ...fallbackModels.filter(m => m !== model)]
+      : fallbackModels;
 
     let response = null;
     let lastError = null;

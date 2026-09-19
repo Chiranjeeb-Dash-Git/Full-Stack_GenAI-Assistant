@@ -147,12 +147,15 @@ export default function Home() {
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [isAuthVisible, setIsAuthVisible] = useState(true);
   const [user, setUser] = useState(null);
-  const [selectedModel, setSelectedModel] = useState("LLaMA 3.3 · 70B");
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
   const [isListening, setIsListening] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Default to light mode after login
   const [showLanding, setShowLanding] = useState(true);
   const [chatSearch, setChatSearch] = useState("");
   const [isVoiceSettingsOpen, setIsVoiceSettingsOpen] = useState(false);
+  const [voiceGender, setVoiceGender] = useState("female"); // "female" | "male"
+  const [voiceVolume, setVoiceVolume] = useState(1.0); // 0.0 to 1.0
+  const [isVoicePopoverOpen, setIsVoicePopoverOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [consoleMode, setConsoleMode] = useState("precise");
   const [activeSideTab, setActiveSideTab] = useState("chats");
@@ -169,7 +172,7 @@ export default function Home() {
   const isRequestActive = useRef(false);
   const welcomeSpokenRef = useRef(false);
 
-  // Female voice welcome speaker (STRICTLY FEMALE VOICE ONLY, ONCE ONLY)
+  // Female/Male voice welcome speaker (ONCE ONLY ON CONSOLE OPEN)
   const speakWelcomeMessage = () => {
     if (welcomeSpokenRef.current) return;
     welcomeSpokenRef.current = true;
@@ -179,39 +182,46 @@ export default function Home() {
       const welcomeText = "Welcome, how may I help you";
       const utterance = new SpeechSynthesisUtterance(welcomeText);
       utterance.rate = 0.95;
-      utterance.pitch = 1.2; // High pitch for female tone
-      utterance.volume = 1.0;
+      utterance.pitch = voiceGender === "male" ? 0.85 : 1.2;
+      utterance.volume = voiceVolume;
 
-      const findFemaleVoice = () => {
+      const findSelectedVoice = () => {
         const voices = window.speechSynthesis.getVoices();
         if (!voices || voices.length === 0) return null;
         
         const femaleKeywords = ["female", "samantha", "victoria", "karen", "zira", "google us english", "jenny", "aria"];
         const maleKeywords = ["male", "guy", "david", "george", "mark", "alex", "daniel"];
 
-        const femaleMatch = voices.find(v => 
-          v.lang.startsWith("en") && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))
-        );
-        if (femaleMatch) return femaleMatch;
+        if (voiceGender === "male") {
+          const maleMatch = voices.find(v => 
+            v.lang.startsWith("en") && maleKeywords.some(kw => v.name.toLowerCase().includes(kw))
+          );
+          return maleMatch || voices.find(v => v.lang.startsWith("en")) || voices[0];
+        } else {
+          const femaleMatch = voices.find(v => 
+            v.lang.startsWith("en") && femaleKeywords.some(kw => v.name.toLowerCase().includes(kw))
+          );
+          if (femaleMatch) return femaleMatch;
 
-        const nonMaleMatch = voices.find(v => 
-          v.lang.startsWith("en") && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw))
-        );
-        return nonMaleMatch || voices[0];
+          const nonMaleMatch = voices.find(v => 
+            v.lang.startsWith("en") && !maleKeywords.some(kw => v.name.toLowerCase().includes(kw))
+          );
+          return nonMaleMatch || voices[0];
+        }
       };
 
-      const speakWithFemaleVoice = () => {
-        const v = findFemaleVoice();
+      const speakWithVoice = () => {
+        const v = findSelectedVoice();
         if (v) utterance.voice = v;
         window.speechSynthesis.speak(utterance);
       };
 
       const availableVoices = window.speechSynthesis.getVoices();
       if (availableVoices && availableVoices.length > 0) {
-        speakWithFemaleVoice();
+        speakWithVoice();
       } else {
         window.speechSynthesis.onvoiceschanged = () => {
-          speakWithFemaleVoice();
+          speakWithVoice();
           window.speechSynthesis.onvoiceschanged = null;
         };
         window.speechSynthesis.speak(utterance);
@@ -571,11 +581,13 @@ export default function Home() {
         <Auth
           onClose={() => {
             setIsAuthVisible(false);
+            setIsDarkMode(false); // ALWAYS START WITH LIGHT MODE AFTER LOGIN
             speakWelcomeMessage();
           }}
           onLogin={(userData) => {
             setUser(userData);
             setIsAuthVisible(false);
+            setIsDarkMode(false); // ALWAYS START WITH LIGHT MODE AFTER LOGIN
             speakWelcomeMessage();
           }}
           currentUser={user}
@@ -604,10 +616,86 @@ export default function Home() {
           {/* Model Badge */}
           <div className="model-badge hidden sm:flex">
             <span className="pulse" />
-            <b>{selectedModel}</b>&nbsp;via Groq LPU
+            <b>{selectedModel.includes("llama-3.3") ? "LLaMA 3.3 · 70B" : selectedModel.includes("llama-3.1") ? "LLaMA 3.1 · 8B" : selectedModel.includes("mixtral") ? "Mixtral 8x7B" : "Gemma 2 · 9B"}</b>&nbsp;via Groq LPU
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Voice & Model Settings Popover Button */}
+            <div className="relative">
+              <button
+                onClick={() => setIsVoicePopoverOpen(prev => !prev)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[var(--line)] bg-[var(--panel)] hover:border-[var(--gold)] text-[var(--taupe)] hover:text-[var(--cream)] transition-colors"
+                title="Voice & Model Settings"
+              >
+                <SlidersHorizontal size={13} />
+                <span className="hidden md:inline">Voice &amp; Model</span>
+              </button>
+
+              {isVoicePopoverOpen && (
+                <div className="absolute right-0 mt-2 w-72 p-4 rounded-2xl bg-[var(--panel)] border border-[var(--line)] shadow-2xl z-50 text-xs flex flex-col gap-3.5 backdrop-blur-md">
+                  <div className="flex items-center justify-between pb-2 border-b border-[var(--line)]">
+                    <span className="font-bold text-[var(--gold-text)] text-sm flex items-center gap-1.5">
+                      <SlidersHorizontal size={14} /> Voice &amp; Model Settings
+                    </span>
+                    <button onClick={() => setIsVoicePopoverOpen(false)} className="opacity-60 hover:opacity-100">
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  {/* Voice Gender Selection */}
+                  <div>
+                    <label className="font-semibold block mb-1.5 opacity-80">Voice Gender</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setVoiceGender("female")}
+                        className={`py-1.5 rounded-xl border font-medium transition-all ${voiceGender === "female" ? "bg-[var(--gold)] text-[var(--void)] border-[var(--gold)] font-bold shadow-md" : "border-[var(--line)] bg-[var(--panel-2)] text-[var(--taupe)]"}`}
+                      >
+                        👩 Female
+                      </button>
+                      <button
+                        onClick={() => setVoiceGender("male")}
+                        className={`py-1.5 rounded-xl border font-medium transition-all ${voiceGender === "male" ? "bg-[var(--gold)] text-[var(--void)] border-[var(--gold)] font-bold shadow-md" : "border-[var(--line)] bg-[var(--panel-2)] text-[var(--taupe)]"}`}
+                      >
+                        👨 Male
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Volume Slider */}
+                  <div>
+                    <div className="flex justify-between font-semibold mb-1 opacity-80">
+                      <span>Volume</span>
+                      <span>{Math.round(voiceVolume * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={voiceVolume}
+                      onChange={(e) => setVoiceVolume(parseFloat(e.target.value))}
+                      className="w-full accent-[var(--gold)] cursor-pointer"
+                    />
+                  </div>
+
+                  {/* Model Switcher Dropdown */}
+                  <div>
+                    <label className="font-semibold block mb-1.5 opacity-80">Switch Model</label>
+                    <select
+                      value={selectedModel}
+                      onChange={(e) => setSelectedModel(e.target.value)}
+                      className="w-full p-2 rounded-xl border border-[var(--line)] bg-[var(--panel-2)] text-[var(--cream)] font-medium outline-none cursor-pointer"
+                    >
+                      <option value="llama-3.3-70b-versatile">LLaMA 3.3 70B (Versatile)</option>
+                      <option value="llama-3.1-8b-instant">LLaMA 3.1 8B (Instant)</option>
+                      <option value="mixtral-8x7b-32768">Mixtral 8x7B (32K context)</option>
+                      <option value="gemma2-9b-it">Gemma 2 9B (Instruction)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Voice Mode Toggle Switch */}
             <div
               className={`voice-switch-btn ${voiceMode ? "on" : ""}`}
@@ -646,9 +734,9 @@ export default function Home() {
             /* Empty State Hero - Robot AI Icon with animations */
             <div className="hero-empty show min-h-[75vh] flex flex-col items-center justify-center text-center max-w-2xl mx-auto py-10">
               
-              {/* Animated Robot AI Icon */}
-              <div className="relative w-32 h-32 md:w-40 md:h-40 mb-5 flex items-center justify-center rounded-full p-2 bg-radial from-[var(--gold)]/20 to-transparent">
-                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain animate-float-slow filter drop-shadow-[0_0_20px_rgba(201,162,39,0.5)]" />
+              {/* Animated Robot AI Icon with High Intensity Glow */}
+              <div className="relative w-32 h-32 md:w-40 md:h-40 mb-5 flex items-center justify-center rounded-full p-2 bg-radial from-[var(--gold)]/30 to-transparent">
+                <img src="/robot-icon.png" alt="Robot AI" className="w-full h-full object-contain robot-icon-intense-glow" />
               </div>
 
               <div className="hero-orb"><span>✦</span></div>
@@ -699,7 +787,7 @@ export default function Home() {
                   <div className="msg-col">
                     <div className="msg-label">
                       <b>{msg.role === "user" ? (user ? user.name : "You") : "Assistant"}</b>
-                      {msg.role === "assistant" && <span className="opacity-60"> · LLaMA 3.3</span>}
+                      {msg.role === "assistant" && <span className="opacity-60"> · {selectedModel.includes("llama-3.3") ? "LLaMA 3.3" : selectedModel.includes("llama-3.1") ? "LLaMA 3.1" : selectedModel.includes("mixtral") ? "Mixtral" : "Gemma 2"}</span>}
                     </div>
 
                     <div className="bubble-wrap">
