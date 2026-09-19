@@ -395,7 +395,8 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Chat error:", err);
-      setMessages([...initialMessagesForUI, { role: "assistant", content: `I'm here to help! ${err.message ? "(" + err.message + ")" : ""}` }]);
+      const userFriendlyMsg = err.message && !err.message.includes("{") ? err.message : "I am temporarily unable to connect to this AI model. Please try selecting another model from the Voice & Model menu.";
+      setMessages([...initialMessagesForUI, { role: "assistant", content: userFriendlyMsg }]);
     } finally {
       setIsLoading(false);
       isRequestActive.current = false;
@@ -696,7 +697,7 @@ export default function Home() {
                       <option value="gemini-2.0-flash" className="bg-[var(--panel)] text-[var(--cream)]">⚡ Google Gemini 2.0 Flash</option>
                       <option value="llama-3.3-70b-versatile" className="bg-[var(--panel)] text-[var(--cream)]">🦙 LLaMA 3.3 70B (Versatile)</option>
                       <option value="llama-3.1-8b-instant" className="bg-[var(--panel)] text-[var(--cream)]">🚀 LLaMA 3.1 8B (Instant)</option>
-                      <option value="deepseek-r1-distill-llama-70b" className="bg-[var(--panel)] text-[var(--cream)]">🧠 DeepSeek R1 Distill 70B</option>
+                      <option value="llama3-70b-8192" className="bg-[var(--panel)] text-[var(--cream)]">⚡ LLaMA 3 70B</option>
                     </select>
                   </div>
                 </div>

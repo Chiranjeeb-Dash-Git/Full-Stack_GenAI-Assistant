@@ -126,12 +126,12 @@ export async function POST(req) {
       );
     }
 
-    // Candidate models: use user-selected model first, then fallbacks
+    // Candidate models: use user-selected model first, then verified fallbacks
     const fallbackModels = [
       "llama-3.3-70b-versatile",
       "llama-3.1-8b-instant",
       "llama3-70b-8192",
-      "deepseek-r1-distill-llama-70b"
+      "llama3-8b-8192"
     ];
     const candidateModels = model && !isGeminiRequested
       ? [model, ...fallbackModels.filter(m => m !== model)]
